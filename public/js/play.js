@@ -2,7 +2,7 @@ const buttons = {
     lock: document.getElementById('lock-button'),
     quit: document.getElementById('quit-button')
 };
-const TIEMPO_ESPERA_PREGUNTA = 1000;
+const TIEMPO_ESPERA_PREGUNTA = 2000;
 const app = new Vue({
     el: '#app',
     data: {
