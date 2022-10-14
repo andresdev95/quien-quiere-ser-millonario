@@ -1,2 +1,4 @@
 node_modules
 package-lock.json
+public/.DS_Store
+public/js/play.original.js

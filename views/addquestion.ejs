@@ -82,7 +82,10 @@
                     <tr v-for="pregunta in preguntas">
                         <td v-html="pregunta.question"></td>
                         <td v-html="pregunta.level"></td>
-                        <td> <button type="button" v-on:click="editarPregunta(pregunta)" class="btn btn-warning">Editar</button></td>
+                        <td>
+                            <button type="button" v-on:click="editarPregunta(pregunta)" class="btn btn-warning btn-sm">Editar</button>
+                            <button type="button" v-on:click="eliminarPregunta(pregunta)" class="btn btn-danger btn-sm">Eliminar</button>
+                        </td>
                     </tr>
                 </tbody>
             </table>

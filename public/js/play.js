@@ -1,20 +1,151 @@
-// TODO Get the questions per slot
+const buttons = {
+    lock: document.getElementById('lock-button'),
+    quit: document.getElementById('quit-button')
+};
+const TIEMPO_ESPERA_PREGUNTA = 1000;
+const app = new Vue({
+    el: '#app',
+    data: {
+        pregunta: {},
+        nivel_maximo: 20,
+        opcionSeleccionada: 0,
+        niveles: [
+            {id: 1, nombre: 'Nivel 1', seguro: 0, completado: 0},
+            {id: 2, nombre: 'Nivel 2', seguro: 0, completado: 0},
+            {id: 3, nombre: 'Nivel 3', seguro: 0, completado: 0},
+            {id: 4, nombre: 'Nivel 4', seguro: 0, completado: 0},
+            {id: 5, nombre: 'Nivel 5', seguro: 1, completado: 0},
+            {id: 6, nombre: 'Nivel 6', seguro: 0, completado: 0},
+            {id: 7, nombre: 'Nivel 7', seguro: 0, completado: 0},
+            {id: 8, nombre: 'Nivel 8', seguro: 0, completado: 0},
+            {id: 9, nombre: 'Nivel 9', seguro: 0, completado: 0},
+            {id: 10, nombre: 'Nivel 10', seguro: 1, completado: 0},
+            {id: 11, nombre: 'Nivel 11', seguro: 0, completado: 0},
+            {id: 12, nombre: 'Nivel 12', seguro: 0, completado: 0},
+            {id: 13, nombre: 'Nivel 13', seguro: 0, completado: 0},
+            {id: 14, nombre: 'Nivel 14', seguro: 0, completado: 0},
+            {id: 15, nombre: 'Nivel 15', seguro: 1, completado: 0},
+            {id: 16, nombre: 'Nivel 16', seguro: 0, completado: 0},
+            {id: 17, nombre: 'Nivel 17', seguro: 0, completado: 0},
+            {id: 18, nombre: 'Nivel 18', seguro: 0, completado: 0},
+            {id: 19, nombre: 'Nivel 19', seguro: 0, completado: 0},
+            {id: 20, nombre: 'Nivel 20', seguro: 1, completado: 0},
+        ],
+        usuario: null,
+        juegoEnProgreso: 1,
+        mensaje: ''
+    },
+    methods: {
+        init(){
+            this.usuario = {
+                nivel_max: 0,
+                nivel_actual: 0,
+                nivel_seguro: 0,
+                tiempo: 0,
+                nombre: 'Usuario',
+                _id: '1',
+            }
+            this.contarTiempo();
+            this.siguientePregunta();
+        },
+        nivelesPanel(){
+            return structuredClone(this.niveles).reverse();
+        },
+        contarTiempo(){
+            setTimeout(() => {
+                if(this.juegoEnProgreso == 1){
+                    this.usuario.tiempo++;
+                    this.contarTiempo();
+                }
+            }, 1000);
+        },
+        getUltimoNivel(){
+            return this.usuario.nivel_actual;
+            /*const nivel = this.niveles.filter((a)=> a.completado)[0];
+            if(nivel) return nivel.id;
+            return 0;*/
+        },
+        getUltimoNivelSeguro(){
+            const nivel = this.nivelesPanel().filter((a)=> a.completado && a.seguro)[0];
+            if(nivel) return nivel.id;
+            return 0;
+        },
+        limpiarRespuestas(){
+            this.opcionSeleccionada = 0;
+            document.querySelectorAll('.answer').forEach(label => {
+                label.classList.remove('ok');
+                label.classList.remove('fail');
+            });
+            this.pregunta = {};
+            this.usuario.nivel_actual = this.getUltimoNivel() + 1;
+            unlockActions();
+            this.mensaje = '';
+        },
+        siguientePregunta(){
+            this.limpiarRespuestas();
+            axios.get('api/question/'+this.usuario.nivel_actual).then((response)=>{
+                this.pregunta = response.data;
+                setTimer(45);
+                startResumeTimer()
+            }).catch((error)=>{
+                console.error(error);
+            });
+        },
+        comprobarRespuesta(){
+            const selectedAnswerLabel = document.getElementById(`option${this.opcionSeleccionada}`);
+            pauseTimer();
+            lockActions();
 
-const api_url = '';
-/*http://localhost:3000/*/
+            if(this.opcionSeleccionada == this.pregunta.answer){
+                selectedAnswerLabel.classList.add("ok");
+                this.marcarNivelComoCompleto();
+                if(this.usuario.nivel_actual === this.nivel_maximo ){
+                    this.terminarJuego();
+                }else{
+                    this.mensaje = 'Excelente, Siguiente nivel';
+                    setTimeout(()=>{ this.siguientePregunta() }, TIEMPO_ESPERA_PREGUNTA);
+                }
+            }else{
+                if(this.opcionSeleccionada){
+                    selectedAnswerLabel.classList.add("fail");
+                }
+                const correctAnswerLabel = document.getElementById(`option${this.pregunta.answer}` );
+                correctAnswerLabel.classList.add("ok");
+                this.mensaje = 'Oh no, retrocedes al ultimo seguro';
+                this.irAUltimoSeguro();
+            }
+        },
+        irAUltimoSeguro(){
+            this.usuario.nivel_actual = this.getUltimoNivelSeguro();
+            this.marcarNivelComoCompleto();
+            setTimeout(()=>{ this.siguientePregunta() }, TIEMPO_ESPERA_PREGUNTA);
+        },
+        marcarNivelComoCompleto(){
+            this.niveles.map((nivel) => {
+                nivel.completado = (this.usuario.nivel_actual >= nivel.id ? 1 : 0)
+            })
+        },
+        terminarJuego(){
+            lockActions();
+            this.mensaje = 'Terminastes el juego<br>Tiempo: ' + this.usuario.tiempo + ' s';
+            this.juegoEnProgreso = 0;
+        }
+    },
+    created: function(){
+        this.init();
+    }
+});
 
-let pregunta = {};
+function lockActions() {
+    document.getElementById('lock-button').disabled = true;
+    document.getElementById('quit-button').disabled = true;
+}
 
-// Global Variables
-let questionId = 0,
-    option1 = '',
-    option2 = '',
-    option3 = '',
-    option4 = '',
-    slot = 0,
-    checkpoint = 0,
-    isFlip = false,
-    isQuit = false;
+function unlockActions(buttons) {
+    document.getElementById('lock-button').disabled = false;
+    document.getElementById('quit-button').disabled = false;
+}
+
 
 // Time Container
 const timer = {
@@ -25,642 +156,6 @@ const timer = {
     timeLeft: 45,
     timeTotal: 45
 };
-
-// Question Container
-const container = {
-    question: document.getElementById('question'),
-    option1: document.getElementById('option1'),
-    option2: document.getElementById('option2'),
-    option3: document.getElementById('option3'),
-    option4: document.getElementById('option4')
-};
-
-// Dialog Container
-const dialogs = {
-    audienceDialog: document.getElementById('audience-poll-dialog'),
-    flipDialog: document.getElementById('flip-the-question-message'),
-    expertDialog: document.getElementById('ask-the-expert-dialog'),
-    quitDialog: document.getElementById('quit-dialog'),
-    quitMessage: document.getElementById('quit-message'),
-    endGameDialog: document.getElementById('end-game-dialog')
-};
-
-// Lifelines Container
-const lifelines = {
-    audiencePoll: document.getElementById('audience-poll'),
-    fiftyFifty: document.getElementById('50-50'),
-    flipTheQuestion: document.getElementById('flip-the-question'),
-    askTheExpert: document.getElementById('ask-the-expert')
-};
-
-// Fifty Fifty Booleans
-const fiftyFiftyDetailsContainer = {
-    is50: false,
-    removedOptions: []
-};
-
-// Buttons Container
-const buttons = {
-    lock: document.getElementById('lock-button'),
-    quit: document.getElementById('quit-button')
-};
-
-// Slot Container (Started array from 1)
-const levels = [
-    0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20
-];
-
-// TODO Get the slot
-function startGame() {
-    // Initialize slot to 1
-    slot = 1;
-
-    // Get the Question
-    getQuestion(levels[slot]);
-}
-
-window.addEventListener('DOMContentLoaded', event => {
-    startGame();
-});
-
-buttons.lock.addEventListener('click', () => {
-    // Lock Buttons and Lifelines
-    lockButtons(buttons);
-    lockLifelines(lifelines);
-
-    // Pause timer if exists
-    if (slot <= 10) {
-        pauseTimer();
-    }
-
-    // Gets the selected input radio button
-    const selectedAnswer = Array.from(
-        document.getElementsByName('answer')
-    ).filter(element => element.checked == true);
-
-    if (selectedAnswer.length == 1) {
-        // Answer is selected
-        // Gets the parent of input button -> Label
-        const answerLabel = selectedAnswer[0].parentNode;
-
-        // Gets all the checked spans and hides it after it has been clicked
-        const spans = document.querySelectorAll('.checked');
-        spans.forEach(span => {
-            span.style.visibility = 'hidden';
-        });
-
-        // Gets the corrected answer option color and makes it white
-        const optionColorSpan = document.getElementById(
-            `option-color${selectedAnswer[0].value}`
-        );
-        optionColorSpan.style.color = '#ececec';
-
-        // Sets the color of label to yellow
-        answerLabel.style.background =
-            'linear-gradient(90deg, rgba(240,176,0,1) 0%, rgba(224,209,70,1) 50%, rgba(240,176,0,1) 100%)';
-        answerLabel.style.color = '#2a2a2a';
-        console.log(selectedAnswer[0].value);
-
-        checkAnswer(selectedAnswer[0].value);
-    } else {
-        // Time is up
-        console.log('Game ended');
-        checkAnswer(null);
-    }
-});
-
-buttons.quit.addEventListener('click', () => {
-    // Show Dialog
-    dialogs.quitDialog.style.display = 'block';
-
-    // Pause timer if exists
-    if (slot <= 10) {
-        pauseTimer();
-    }
-
-    const message = document.getElementById('quit-dialog-message');
-    message.innerHTML = `Are you sure you want to quit?<br />You will win Rs ${
-        levels[slot - 1]
-    }`;
-    const quitButton = document.getElementById('quit-dialog-quit');
-    const cancelButton = document.getElementById('quit-dialog-cancel');
-
-    quitButton.addEventListener('click', () => {
-        isQuit = true;
-        dialogs.quitDialog.style.display = 'none';
-        dialogs.quitMessage.style.display = 'block';
-    });
-
-    cancelButton.addEventListener('click', () => {
-        dialogs.quitDialog.style.display = 'none';
-    });
-});
-
-function getQuestion(price) {
-    // Lock Buttons and Lifelines
-    lockButtons(buttons);
-    lockLifelines(lifelines);
-
-    // Set the time
-    if (slot <= 5) {
-        setTimer(45);
-        console.log('Timer Entered if');
-    } else if (slot <= 10) {
-        setTimer(60);
-        console.log('Timer Entered else if');
-    } else {
-        setTimer(null);
-        console.log('Timer Entered else');
-    }
-
-    // Make question AJAX request
-    let questionRequest = new XMLHttpRequest();
-    questionRequest.onload = () => {
-        let responseObject = null;
-
-        try {
-            responseObject = JSON.parse(questionRequest.responseText);
-        } catch (err) {
-            console.log('Could not parse JSON!');
-        }
-
-        if (responseObject) {
-            if (questionRequest.status == 200) {
-                // If question is received successfully set the question
-                //console.log(responseObject[0]);
-                setQuestion(responseObject);
-            } else {
-                // TODO Error if network issue
-                console.log('Error');
-            }
-        }
-    };
-
-    if (isFlip) {
-        console.log('Entered else');
-        isFlip = false;
-        dialogs.flipDialog.style.display = 'none';
-        questionRequest.open(
-            'get',
-            `${api_url}api/lifelines/flipthequestion/${questionId}/${price}`,
-            true
-        );
-    } else {
-        console.log('Entered if');
-        questionRequest.open(
-            'get',
-            `${api_url}api/question/${price}`,
-            true
-        );
-    }
-    questionRequest.send();
-}
-
-function setQuestion(questionObject) {
-    // Set global variables
-    questionId = questionObject._id;
-    option1 = questionObject.option1;
-    option2 = questionObject.option2;
-    option3 = questionObject.option3;
-    option4 = questionObject.option4;
-    pregunta = questionObject;
-
-    // Set the question
-    container.question.innerHTML = questionObject.question;
-
-    // Set options after 1 seconds
-    setTimeout(() => {
-        container.option1.innerHTML = `<input type="radio" name="answer" id="1" value="1" /><span class="option-color" id="option-color1">A:&nbsp;</span> ${option1} <span class="checked"></span>`;
-        container.option2.innerHTML = `<input type="radio" name="answer" id="2" value="2" /><span class="option-color" id="option-color2">B:&nbsp;</span> ${option2} <span class="checked"></span>`;
-        container.option3.innerHTML = `<input type="radio" name="answer" id="3" value="3" /><span class="option-color" id="option-color3">C:&nbsp;</span> ${option3} <span class="checked"></span>`;
-        container.option4.innerHTML = `<input type="radio" name="answer" id="4" value="4" /><span class="option-color" id="option-color4">D:&nbsp;</span> ${option4} <span class="checked"></span>`;
-
-        // Unlock buttons and lifelines once options are displayed
-        unlockButtons(buttons);
-        if (slot != 16) unlockLifelines(lifelines);
-
-        // Start the timer if levels < 10
-        if (slot <= 10) {
-            startResumeTimer();
-        }
-    }, 1000);
-}
-
-
-function checkAnswer(selectedAnswer) {
-    //Nueva comprobacion Andres;
-    const selectedAnswerLabel = document.getElementById(`option${selectedAnswer}`);
-
-    if(selectedAnswer == pregunta.answer){
-        selectedAnswerLabel.style.background =
-            'linear-gradient(90deg, rgba(47,132,4,1) 0%, rgba(87,212,8,1) 50%, rgba(47,132,4,1) 100%)';
-        selectedAnswerLabel.style.color = '#ffffff';
-
-        const optionColorSpan = document.getElementById(`option-color${selectedAnswer}` );
-        optionColorSpan.style.color = '#f0d245';
-
-        // Since answer is correct, end the question and go to next question
-        setTimeout(() => {
-            endQuestion(true);
-        }, 2000);
-
-
-    }else{
-        if (selectedAnswer) {
-            // Answer is selected but is wrong
-            selectedAnswerLabel.style.background =
-                'linear-gradient(90deg, rgba(240,176,0,1) 0%, rgba(224,209,70,1) 50%, rgba(240,176,0,1) 100%)';
-        }
-        // Display correct answer
-        const correctAnswerLabel = document.getElementById(
-            `option${pregunta.answer}`
-        );
-        correctAnswerLabel.style.background =
-            'linear-gradient(90deg, rgba(47,132,4,1) 0%, rgba(87,212,8,1) 50%, rgba(47,132,4,1) 100%)';
-        correctAnswerLabel.style.color = '#ffffff';
-
-        // Since answer is incorrect end the game
-        setTimeout(() => {
-            endQuestion(false);
-        }, 3000);
-    }
-
-
-    /*
-
-    // Make check answer AJAX request
-    let checkRequest = new XMLHttpRequest();
-    checkRequest.onload = () => {
-        let responseObject = null;
-        try {
-            responseObject = JSON.parse(checkRequest.responseText);
-        } catch (err) {
-            console.log('Could not parse JSON!');
-        }
-
-        if (responseObject) {
-            if (checkRequest.status == 200) {
-                const selectedAnswerLabel = document.getElementById(
-                    `option${selectedAnswer}`
-                );
-                setTimeout(() => {
-                    // Display answer result after 2 seconds
-                    if (responseObject.answer == selectedAnswer) {
-                        console.log('Correct answer!');
-                        selectedAnswerLabel.style.background =
-                            'linear-gradient(90deg, rgba(47,132,4,1) 0%, rgba(87,212,8,1) 50%, rgba(47,132,4,1) 100%)';
-                        selectedAnswerLabel.style.color = '#ffffff';
-
-                        const optionColorSpan = document.getElementById(
-                            `option-color${selectedAnswer}`
-                        );
-                        optionColorSpan.style.color = '#f0d245';
-
-                        // Since answer is correct, end the question and go to next question
-                        setTimeout(() => {
-                            endQuestion(true);
-                        }, 3000);
-                    } else {
-                        console.log('Incorrect answer!');
-                        if (selectedAnswer) {
-                            // Answer is selected but is wrong
-                            selectedAnswerLabel.style.background =
-                                'linear-gradient(90deg, rgba(240,176,0,1) 0%, rgba(224,209,70,1) 50%, rgba(240,176,0,1) 100%)';
-                        }
-                        // Display correct answer
-                        const correctAnswerLabel = document.getElementById(
-                            `option${responseObject.answer}`
-                        );
-                        correctAnswerLabel.style.background =
-                            'linear-gradient(90deg, rgba(47,132,4,1) 0%, rgba(87,212,8,1) 50%, rgba(47,132,4,1) 100%)';
-                        correctAnswerLabel.style.color = '#ffffff';
-
-                        // Since answer is incorrect end the game
-                        setTimeout(() => {
-                            endQuestion(false);
-                        }, 3000);
-                    }
-                }, 2000);
-            } else {
-                console.log('Error: ' + responseObject.error);
-            }
-        }
-    };
-
-    checkRequest.open(
-        'get',
-        `${api_url}api/checkanswer/${questionId}`,
-        true
-    );
-    checkRequest.send();
-    
-    */
-}
-
-function endQuestion(isCorrect) {
-    // TODO Display a dialog
-
-    if(isCorrect){
-        dialogs.endGameDialog.style.display = 'block';
-        dialogs.endGameDialog.innerHTML = 'Excelente, siguiente pregunta';
-        setTimeout(() => { dialogs.endGameDialog.style.display = 'none'; }, 3000);
-    }
-
-    setTimeout(() => {
-        // Set all label backgrounds and text color to default settings and empty labels
-        container.question.innerHTML = '&nbsp;';
-        document.querySelectorAll('.answer').forEach(label => {
-            label.innerHTML = '&nbsp';
-            label.style.background = '#390f4e';
-            label.style.color = '#ffffff';
-        });
-
-        // Set color spans to yellow
-        document.querySelectorAll('.option-color').forEach(span => {
-            span.style.color = '#f0d245';
-        });
-
-        if (isFlip) {
-            nextQuestion();
-        } else if (isQuit) {
-            endGame();
-        } else if (isCorrect) {
-            nextQuestion();
-        } else {
-            endGame();
-        }
-    }, 3000);
-}
-
-function nextQuestion() {
-    // Save the checkpoint if slot is 10000 or 320000
-    if (slot == 5 || slot == 10 || slot == 15) {
-        console.log('Checkpoint');
-        checkpoint = slot;
-    }
-
-    if (slot == 10) {
-        // Unlock 7 crore question
-        lockedElements = document.querySelectorAll('.locked');
-        lockedElements.forEach(lockedElement => {
-            lockedElement.classList.remove('locked');
-        });
-    }
-
-    if (!isFlip) {
-        // Save color marker
-        const marker = document.getElementById(`slot-marker-${slot}`);
-        marker.style.visibility = 'visible';
-    }
-
-    if (!isFlip) slot++;
-    getQuestion(levels[slot]);
-}
-
-function endGame() {
-    let price = null;
-    if (isQuit) {
-        price = `nivel ${levels[slot - 1]}`;
-        console.log(`nivel ${levels[slot - 1]}`);
-        flipTheQuestionMethod();
-    } else {
-        price = `nivel ${levels[checkpoint]}`;
-        console.log(`Has llegado al nivel ${levels[checkpoint]}`);
-    }
-
-    dialogs.endGameDialog.style.display = 'block';
-    dialogs.endGameDialog.innerHTML = price;
-
-    setTimeout(() => {
-        window.location.href = '/';
-    }, 4000);
-
-    // Clear markers
-    document.querySelectorAll('.reached').forEach(marker => {
-        marker.style.visibility = 'hidden';
-    });
-}
-
-lifelines.audiencePoll.addEventListener('click', () => {
-    // Pause the timer if it exists
-    if (slot <= 10) {
-        pauseTimer();
-    }
-
-    const div = document.getElementById('audience-poll-div');
-    if (div.classList.contains('unused')) {
-        // Use the lifeline
-
-        // Send Audience Poll AJAX Request
-        const audiencePollRequest = new XMLHttpRequest();
-        audiencePollRequest.onload = () => {
-            let responseObject = null;
-
-            try {
-                responseObject = JSON.parse(audiencePollRequest.responseText);
-            } catch (err) {
-                console.log('Could not parse JSON!');
-            }
-
-            if (responseObject) {
-                if (audiencePollRequest.status == 200) {
-                    createChart(
-                        responseObject.option1,
-                        responseObject.option2,
-                        responseObject.option3,
-                        responseObject.option4
-                    );
-                    div.classList.remove('unused');
-                } else {
-                    console.log('Error');
-                }
-            }
-        };
-
-        if (fiftyFiftyDetailsContainer.is50) {
-            console.log('Entered 50-50 to audiencePoll');
-            let removedOption1 = fiftyFiftyDetailsContainer.removedOptions[0];
-            let removedOption2 = fiftyFiftyDetailsContainer.removedOptions[1];
-
-            audiencePollRequest.open(
-                'get',
-                `${api_url}api/lifelines/50-50-to-audiencepoll/${questionId}/${removedOption1}/${removedOption2}`,
-                true
-            );
-        } else {
-            audiencePollRequest.open(
-                'get',
-                `${api_url}api/lifelines/audiencepoll/${questionId}`,
-                true
-            );
-        }
-
-        audiencePollRequest.send();
-
-        const btnClose = document.getElementById('audience-poll-close');
-        btnClose.addEventListener('click', () => {
-            dialogs.audienceDialog.style.display = 'none';
-
-            // Resume the timer if it exists
-            if (slot <= 10) {
-                startResumeTimer();
-            }
-        });
-
-        dialogs.audienceDialog.style.display = 'block';
-    } else {
-        console.log('Already used');
-    }
-});
-
-lifelines.fiftyFifty.addEventListener('click', () => {
-    const div = document.getElementById('50-50-div');
-    if (div.classList.contains('unused')) {
-        // Use the lifeline
-
-        fiftyFiftyDetailsContainer.is50 = true;
-
-        // Send Fifty Fifty AJAX Request
-        const fiftyFiftyRequest = new XMLHttpRequest();
-        fiftyFiftyRequest.onload = () => {
-            let responseObject = null;
-
-            try {
-                responseObject = JSON.parse(fiftyFiftyRequest.responseText);
-            } catch (err) {
-                console.log('Could not parse JSON!');
-            }
-
-            if (responseObject) {
-                if (fiftyFiftyRequest.status == 200) {
-                    console.log(responseObject);
-                    // Adding to 50-50 -> Experts advice .removed array
-                    fiftyFiftyDetailsContainer.removedOptions.push(
-                        responseObject.remove1,
-                        responseObject.remove2
-                    );
-                    console.log(fiftyFiftyDetailsContainer.removedOptions);
-
-                    // Remove two incorrect answers
-                    const incorrectAnswer1 = document.getElementById(
-                        `option${responseObject.remove1}`
-                    );
-                    incorrectAnswer1.innerHTML = '&nbsp;';
-                    const incorrectAnswer2 = document.getElementById(
-                        `option${responseObject.remove2}`
-                    );
-                    incorrectAnswer2.innerHTML = '&nbsp;';
-                    div.classList.remove('unused');
-                } else {
-                    console.log('Error');
-                }
-            }
-        };
-        fiftyFiftyRequest.open(
-            'get',
-            `${api_url}api/lifelines/fiftyfifty/${questionId}`,
-            true
-        );
-        fiftyFiftyRequest.send();
-    } else {
-        console.log('Already used');
-    }
-});
-
-lifelines.flipTheQuestion.addEventListener('click', () => {
-    const div = document.getElementById('flip-the-question-div');
-    if (div.classList.contains('unused')) {
-        // Use the lifeline
-        dialogs.flipDialog.style.display = 'block';
-        isFlip = true;
-        div.classList.remove('unused');
-        flipTheQuestionMethod();
-    } else {
-        console.log('Already used');
-    }
-});
-
-function flipTheQuestionMethod() {
-    // Pause the timer if it exists
-    if (slot <= 10) {
-        pauseTimer();
-    }
-
-    lockLifelines(lifelines);
-}
-
-// Ask the expert
-lifelines.askTheExpert.addEventListener('click', () => {
-    // Pause the timer if it exists
-    if (slot <= 10) {
-        pauseTimer();
-    }
-
-    const div = document.getElementById('ask-the-expert-div');
-    if (div.classList.contains('unused')) {
-        // Use the lifeline
-
-        // Send Ask The Expert AJAX Request
-        const askTheExpertRequest = new XMLHttpRequest();
-        askTheExpertRequest.onload = () => {
-            let responseObject = null;
-
-            try {
-                responseObject = JSON.parse(askTheExpertRequest.responseText);
-            } catch (err) {
-                console.log('Could not parse JSON!');
-            }
-
-            if (responseObject) {
-                if (askTheExpertRequest.status == 200) {
-                    console.log(responseObject);
-                    const text = document.getElementById('ask-the-expert-p');
-                    const answerLabelText = document.getElementById(
-                        `option${responseObject.answer}`
-                    ).textContent;
-                    text.innerHTML = `Expert thinks the answer is ${answerLabelText}`;
-                    div.classList.remove('unused');
-                } else {
-                    console.log('Error');
-                }
-            }
-        };
-
-        if (fiftyFiftyDetailsContainer.is50) {
-            console.log('Entered 50-50 to Experts');
-            let removedOption1 = fiftyFiftyDetailsContainer.removedOptions[0];
-            let removedOption2 = fiftyFiftyDetailsContainer.removedOptions[1];
-
-            askTheExpertRequest.open(
-                'get',
-                `${api_url}api/lifelines/50-50-to-asktheexpert/${questionId}/${removedOption1}/${removedOption2}`,
-                true
-            );
-        } else {
-            askTheExpertRequest.open(
-                'get',
-                `${api_url}api/lifelines/asktheexpert/${questionId}`,
-                true
-            );
-        }
-
-        askTheExpertRequest.send();
-
-        const btnClose = document.getElementById('ask-the-expert-close');
-        btnClose.addEventListener('click', () => {
-            dialogs.expertDialog.style.display = 'none';
-
-            // Resume the timer if it exists
-            if (slot <= 10) {
-                startResumeTimer();
-            }
-        });
-
-        dialogs.expertDialog.style.display = 'block';
-    } else {
-        console.log('Already used');
-    }
-});
 
 function setTimer(time) {
     timer.running = false;
@@ -708,8 +203,7 @@ function decrementTimer() {
                 timer.span.innerHTML = timer.timeLeft;
                 decrementTimer();
             } else {
-                console.log('Time is up');
-                buttons.lock.click();
+                app.comprobarRespuesta();
             }
         }, 1000);
     }

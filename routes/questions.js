@@ -66,7 +66,7 @@ router.get('/question/:level', async (req, res) => {
             .skip(random);
 
 
-        shuffleProperties(question);
+        //shuffleProperties(question);
 
         res.status(200).json(question);
     } catch (err) {
@@ -97,6 +97,18 @@ router.post('/question', async (req, res)=>{
             const savedQuestion = await question.save();
             res.status(201).json(savedQuestion);
         }
+    } catch (err) {
+        res.status(400).json({ error: err });
+    }
+});
+
+router.post('/question-remove/:id', async (req, res)=>{
+    try {
+        const id = req.params.id;
+        Question.remove({ _id: id }, function(err) {
+            if (err) res.status(400).json({ error: err });
+            else res.json({message: 'ok'});
+        });
     } catch (err) {
         res.status(400).json({ error: err });
     }

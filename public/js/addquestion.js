@@ -31,6 +31,14 @@ new Vue({
         editarPregunta(pregunta){
             this.pregunta = pregunta;
         },
+        eliminarPregunta(pregunta){
+            if(!confirm('¿Seguro deseas eliminar?')) return;
+            axios.post('question-remove/'+pregunta._id).then(response => {
+                this.preguntas = this.preguntas.filter((a) => a._id != pregunta._id);
+            }).catch(error => {
+                console.log(error);
+            }).then(()=>{ });
+        },
         addPregunta(pregunta){
             let i = this.preguntas.findIndex(x => x._id == pregunta._id)
             if( i === -1 ){ this.preguntas.push(pregunta); }
