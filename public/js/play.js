@@ -3,6 +3,8 @@
 const api_url = '';
 /*http://localhost:3000/*/
 
+let pregunta = {};
+
 // Global Variables
 let questionId = 0,
     option1 = '',
@@ -64,24 +66,8 @@ const buttons = {
 };
 
 // Slot Container (Started array from 1)
-const slots = [
-    0,
-    1000,
-    2000,
-    3000,
-    5000,
-    10000,
-    20000,
-    40000,
-    80000,
-    160000,
-    320000,
-    640000,
-    1250000,
-    2500000,
-    5000000,
-    10000000,
-    70000000
+const levels = [
+    0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20
 ];
 
 // TODO Get the slot
@@ -90,7 +76,7 @@ function startGame() {
     slot = 1;
 
     // Get the Question
-    getQuestion(slots[slot]);
+    getQuestion(levels[slot]);
 }
 
 window.addEventListener('DOMContentLoaded', event => {
@@ -154,7 +140,7 @@ buttons.quit.addEventListener('click', () => {
 
     const message = document.getElementById('quit-dialog-message');
     message.innerHTML = `Are you sure you want to quit?<br />You will win Rs ${
-        slots[slot - 1]
+        levels[slot - 1]
     }`;
     const quitButton = document.getElementById('quit-dialog-quit');
     const cancelButton = document.getElementById('quit-dialog-cancel');
@@ -187,8 +173,6 @@ function getQuestion(price) {
         console.log('Timer Entered else');
     }
 
-    console.log(slots[slot]);
-    console.log(slot);
     // Make question AJAX request
     let questionRequest = new XMLHttpRequest();
     questionRequest.onload = () => {
@@ -203,8 +187,8 @@ function getQuestion(price) {
         if (responseObject) {
             if (questionRequest.status == 200) {
                 // If question is received successfully set the question
-                console.log(responseObject[0]);
-                setQuestion(responseObject[0]);
+                //console.log(responseObject[0]);
+                setQuestion(responseObject);
             } else {
                 // TODO Error if network issue
                 console.log('Error');
@@ -239,11 +223,12 @@ function setQuestion(questionObject) {
     option2 = questionObject.option2;
     option3 = questionObject.option3;
     option4 = questionObject.option4;
+    pregunta = questionObject;
 
     // Set the question
     container.question.innerHTML = questionObject.question;
 
-    // Set options after 5 seconds
+    // Set options after 1 seconds
     setTimeout(() => {
         container.option1.innerHTML = `<input type="radio" name="answer" id="1" value="1" /><span class="option-color" id="option-color1">A:&nbsp;</span> ${option1} <span class="checked"></span>`;
         container.option2.innerHTML = `<input type="radio" name="answer" id="2" value="2" /><span class="option-color" id="option-color2">B:&nbsp;</span> ${option2} <span class="checked"></span>`;
@@ -254,14 +239,55 @@ function setQuestion(questionObject) {
         unlockButtons(buttons);
         if (slot != 16) unlockLifelines(lifelines);
 
-        // Start the timer if slots < 10
+        // Start the timer if levels < 10
         if (slot <= 10) {
             startResumeTimer();
         }
     }, 1000);
 }
 
+
 function checkAnswer(selectedAnswer) {
+    //Nueva comprobacion Andres;
+    const selectedAnswerLabel = document.getElementById(`option${selectedAnswer}`);
+
+    if(selectedAnswer == pregunta.answer){
+        selectedAnswerLabel.style.background =
+            'linear-gradient(90deg, rgba(47,132,4,1) 0%, rgba(87,212,8,1) 50%, rgba(47,132,4,1) 100%)';
+        selectedAnswerLabel.style.color = '#ffffff';
+
+        const optionColorSpan = document.getElementById(`option-color${selectedAnswer}` );
+        optionColorSpan.style.color = '#f0d245';
+
+        // Since answer is correct, end the question and go to next question
+        setTimeout(() => {
+            endQuestion(true);
+        }, 2000);
+
+
+    }else{
+        if (selectedAnswer) {
+            // Answer is selected but is wrong
+            selectedAnswerLabel.style.background =
+                'linear-gradient(90deg, rgba(240,176,0,1) 0%, rgba(224,209,70,1) 50%, rgba(240,176,0,1) 100%)';
+        }
+        // Display correct answer
+        const correctAnswerLabel = document.getElementById(
+            `option${pregunta.answer}`
+        );
+        correctAnswerLabel.style.background =
+            'linear-gradient(90deg, rgba(47,132,4,1) 0%, rgba(87,212,8,1) 50%, rgba(47,132,4,1) 100%)';
+        correctAnswerLabel.style.color = '#ffffff';
+
+        // Since answer is incorrect end the game
+        setTimeout(() => {
+            endQuestion(false);
+        }, 3000);
+    }
+
+
+    /*
+
     // Make check answer AJAX request
     let checkRequest = new XMLHttpRequest();
     checkRequest.onload = () => {
@@ -327,10 +353,18 @@ function checkAnswer(selectedAnswer) {
         true
     );
     checkRequest.send();
+    
+    */
 }
 
 function endQuestion(isCorrect) {
     // TODO Display a dialog
+
+    if(isCorrect){
+        dialogs.endGameDialog.style.display = 'block';
+        dialogs.endGameDialog.innerHTML = 'Excelente, siguiente pregunta';
+        setTimeout(() => { dialogs.endGameDialog.style.display = 'none'; }, 3000);
+    }
 
     setTimeout(() => {
         // Set all label backgrounds and text color to default settings and empty labels
@@ -355,12 +389,12 @@ function endQuestion(isCorrect) {
         } else {
             endGame();
         }
-    }, 4000);
+    }, 3000);
 }
 
 function nextQuestion() {
     // Save the checkpoint if slot is 10000 or 320000
-    if (slot == 5 || slot == 10) {
+    if (slot == 5 || slot == 10 || slot == 15) {
         console.log('Checkpoint');
         checkpoint = slot;
     }
@@ -380,18 +414,18 @@ function nextQuestion() {
     }
 
     if (!isFlip) slot++;
-    getQuestion(slots[slot]);
+    getQuestion(levels[slot]);
 }
 
 function endGame() {
     let price = null;
     if (isQuit) {
-        price = `Rs ${slots[slot - 1]}`;
-        console.log(`You have won Rs ${slots[slot - 1]}`);
+        price = `nivel ${levels[slot - 1]}`;
+        console.log(`nivel ${levels[slot - 1]}`);
         flipTheQuestionMethod();
     } else {
-        price = `Rs ${slots[checkpoint]}`;
-        console.log(`You have won Rs ${slots[checkpoint]}`);
+        price = `nivel ${levels[checkpoint]}`;
+        console.log(`Has llegado al nivel ${levels[checkpoint]}`);
     }
 
     dialogs.endGameDialog.style.display = 'block';

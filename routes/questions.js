@@ -11,7 +11,7 @@ const Questions = [
         option3: 'oro',
         option4: 'plata',
         answer: 1,
-        slot: 1000
+        level: 1
     },
     {
         _id: 2,
@@ -21,25 +21,61 @@ const Questions = [
         option3: 'Oro',
         option4: 'Plata',
         answer: 3,
-        slot: 1000
+        level: 1
     }
 ];
 
-function getUniqueQuestion(){
-    return Questions[Math.floor(Math.random()*Questions.length)];
+function shuffleProperties(pregunta){
+    const keys = ['option1','option2','option3','option4'];
+    const keysShuffle = structuredClone(keys).sort((a, b) => 0.5 - Math.random());
+    const clone = structuredClone(pregunta);
+    pregunta.answer = 1;
+
+    for (var key in keys){
+        let index = keys[key];
+        let indexShuffle = keysShuffle[key];
+        pregunta[index] = clone[indexShuffle];
+        if(indexShuffle == 'option1') pregunta.answer = parseInt(key)+1;
+    }
 }
-function getQuestionById(id){
-    const i = Questions.findIndex(a => a._id == id);
-    if(i !== -1) return Questions[i];
-    return {};
-}
 
-
-
-app.get('/question', (req, res) => {
+router.get('/question', (req, res) => {
     res.render('addquestion');
 });
 
+
+router.get('/save-question', async (req, res) => {
+    let results = [];
+    for (var i = 0; i < Questions.length; i++) {
+        const a = Questions[i];
+        const question = new Question({
+            question: a.question,
+            option1: a.option1,
+            option2: a.option2,
+            option3: a.option3,
+            option4: a.option4,
+            answer: a.answer,
+            level: a.level
+        });
+
+        const result = await question.save();
+        results.push(result);
+    }
+    res.json(results);
+});
+
+
+router.get('/questions', async (request, res)=>{
+    const questions = await Question.find();
+    try{
+        res.json(questions);
+    }catch(error){
+        res.status(400).json({ error: err });
+    }
+});
+
+
+/*
 router.get('/questions', async (req, res) => {
     try {
         const questions = await Question.find();
@@ -48,46 +84,58 @@ router.get('/questions', async (req, res) => {
         res.json({ message: err });
     }
 });
+*/
 
-router.get('/question/:slot', async (req, res) => {
+/*router.get('/questions', async (req, res) => {
     try {
-        const question = [getUniqueQuestion()];
-        /*const count = await Question.countDocuments({
-            slot: req.params.slot
-        });
-        const random = Math.floor(Math.random() * count);
-        const question = await Question.find({ slot: req.params.slot })
+        const questions = await Question.find();
+        Question.res.json(questions);
+    } catch (err) {
+        res.json({ message: err });
+    }
+});*/
+
+router.get('/question/:level', async (req, res) => {
+    //await Question.updateMany({},{ $set: { level: [1] } });
+
+    try {
+        const level = parseInt(req.params.level);
+        const filters = { level: level};
+
+        const totalRecords = await Question.countDocuments(filters);
+        const random = Math.floor(Math.random() * totalRecords);
+        let question = await Question.findOne(filters)
             .limit(1)
-            .skip(random);*/
+            .skip(random);
+
+
+        //shuffleProperties(question);
+
         res.status(200).json(question);
     } catch (err) {
         res.status(400).json({ error: err });
     }
 });
-/*
-router.post('/add', async (req, res) => {
-    // Validation
-    const { error } = questionValidation(req.body);
-    if (error) return res.status(400).json({ error: error.details[0].message });
 
-    // New Question
-    const question = new Question({
-        question: req.body.question,
-        option1: req.body.option1,
-        option2: req.body.option2,
-        option3: req.body.option3,
-        option4: req.body.option4,
-        answer: req.body.answer,
-        slot: req.body.slot
-    });
+router.post('/question', async(req, res)=>{
     try {
+        const question = new Question({
+            question: req.body.question,
+            option1: req.body.option1,
+            option2: req.body.option2,
+            option3: req.body.option3,
+            option4: req.body.option4,
+            answer: req.body.answer,
+            level: req.body.level
+        });
+
         const savedQuestion = await question.save();
-        res.json({ error: null, question: savedQuestion });
+        res.status(201).json(savedQuestion);
     } catch (err) {
-        res.json({ error: err });
+        res.status(400).json({ error: err });
     }
 });
-*/
+
 // Get A Specific Question
 router.get('/check/:questionId', async (req, res) => {
     try {
@@ -101,8 +149,7 @@ router.get('/check/:questionId', async (req, res) => {
 
 router.get('/checkanswer/:questionId', async (req, res) => {
     try {
-        //const question = await Question.findById(req.params.questionId);
-        const question = getQuestionById(req.params.questionId);
+        const question = await Question.findById(req.params.questionId);
         res.status(200).json({ answer: question.answer });
     } catch (err) {
         res.status(400).json({ error: err });

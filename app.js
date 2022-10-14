@@ -5,9 +5,11 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const PORT = process.env.PORT || 8080;
-const DB_CONNECTION = process.env.DB_CONNECTION;
+const DB_CONNECTION = process.env.DB_CONNECTION || 'mongodb://localhost:27017/millonario';
 
-require('dotenv/config');
+global.structuredClone = (val) => JSON.parse(JSON.stringify(val))
+
+//require('dotenv/config');
 
 // Middlewares
 app.set('view engine', 'ejs');
@@ -31,10 +33,9 @@ app.get('/play', (req, res) => {
 });
 
 // Connect to db
-
-mongoose.connect(DB_CONNECTION, { useNewUrlParser: true }, () =>
-    console.log('Connected to DB')
-);
+mongoose.connect(DB_CONNECTION, { useNewUrlParser: true })
+    .then(() => console.log('MongoDB Connected'))
+    .catch(err => console.log(err));
 
 // Listen to server
 app.listen(PORT, () => console.log('Listening on http://localhost:'+PORT));

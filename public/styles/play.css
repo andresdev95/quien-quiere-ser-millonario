@@ -385,7 +385,7 @@ aside {
     text-align: end;
     width: auto;
     color: #f0d245;
-    padding: 5px 30px 5px 10px;
+    padding: 1px 30px 1px 10px;
 }
 
 .reached {
@@ -398,7 +398,7 @@ aside {
     letter-spacing: 1px;
     width: auto;
     color: #f0d245;
-    padding: 5px 30px;
+    padding: 1px 30px;
 }
 
 .checkpoint {

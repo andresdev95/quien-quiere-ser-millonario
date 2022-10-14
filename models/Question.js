@@ -25,8 +25,8 @@ const QuestionSchema = mongoose.Schema({
         type: Number,
         required: true
     },
-    slot: {
-        type: Number,
+    level: {
+        type: Array,
         required: true
     }
 });
