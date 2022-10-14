@@ -2,28 +2,6 @@ const express = require('express');
 const router = express.Router();
 const Question = require('../models/Question');
 
-const Questions = [
-    {
-        _id: 1,
-        question: '¿Cual es una comida?',
-        option1: 'queso',
-        option2: 'cobre',
-        option3: 'oro',
-        option4: 'plata',
-        answer: 1,
-        level: 1
-    },
-    {
-        _id: 2,
-        question: '¿Que medalla indica el primer lugar?',
-        option1: 'Bronce',
-        option2: 'Cobre',
-        option3: 'Oro',
-        option4: 'Plata',
-        answer: 3,
-        level: 1
-    }
-];
 
 function shuffleProperties(pregunta){
     const keys = ['option1','option2','option3','option4'];
@@ -41,27 +19,6 @@ function shuffleProperties(pregunta){
 
 router.get('/question', (req, res) => {
     res.render('addquestion');
-});
-
-
-router.get('/save-question', async (req, res) => {
-    let results = [];
-    for (var i = 0; i < Questions.length; i++) {
-        const a = Questions[i];
-        const question = new Question({
-            question: a.question,
-            option1: a.option1,
-            option2: a.option2,
-            option3: a.option3,
-            option4: a.option4,
-            answer: a.answer,
-            level: a.level
-        });
-
-        const result = await question.save();
-        results.push(result);
-    }
-    res.json(results);
 });
 
 
@@ -119,7 +76,8 @@ router.get('/question/:level', async (req, res) => {
 
 router.post('/question', async(req, res)=>{
     try {
-        const question = new Question({
+        const id = req.body._id;
+        const body = {
             question: req.body.question,
             option1: req.body.option1,
             option2: req.body.option2,
@@ -127,10 +85,18 @@ router.post('/question', async(req, res)=>{
             option4: req.body.option4,
             answer: req.body.answer,
             level: req.body.level
-        });
+        };
 
-        const savedQuestion = await question.save();
-        res.status(201).json(savedQuestion);
+        if(id){
+            Question.findByIdAndUpdate(id, body, (err, result) => {
+                if(err) res.status(400).json({ error: err });
+                res.json(result);
+            });
+        }else{
+            const question = new Question(body);
+            const savedQuestion = await question.save();
+            res.status(201).json(savedQuestion);
+        }
     } catch (err) {
         res.status(400).json({ error: err });
     }
