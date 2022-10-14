@@ -7,13 +7,13 @@ function shuffleProperties(pregunta){
     const keys = ['option1','option2','option3','option4'];
     const keysShuffle = structuredClone(keys).sort((a, b) => 0.5 - Math.random());
     const clone = structuredClone(pregunta);
-    pregunta.answer = 1;
+    //pregunta.answer = 1;
 
     for (var key in keys){
         let index = keys[key];
         let indexShuffle = keysShuffle[key];
         pregunta[index] = clone[indexShuffle];
-        if(indexShuffle == 'option1') pregunta.answer = parseInt(key)+1;
+        if(indexShuffle == ('option'+clone.answer)) pregunta.answer = parseInt(key)+1;
     }
 }
 
@@ -66,7 +66,7 @@ router.get('/question/:level', async (req, res) => {
             .skip(random);
 
 
-        //shuffleProperties(question);
+        shuffleProperties(question);
 
         res.status(200).json(question);
     } catch (err) {
