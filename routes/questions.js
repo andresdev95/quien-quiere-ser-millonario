@@ -74,7 +74,7 @@ router.get('/question/:level', async (req, res) => {
     }
 });
 
-router.post('/question', async(req, res)=>{
+router.post('/question', async (req, res)=>{
     try {
         const id = req.body._id;
         const body = {
@@ -88,9 +88,9 @@ router.post('/question', async(req, res)=>{
         };
 
         if(id){
-            Question.findByIdAndUpdate(id, body, (err, result) => {
+            Question.findByIdAndUpdate(id, body, { returnOriginal: false }, function(err, result) {
                 if(err) res.status(400).json({ error: err });
-                res.json(result);
+                else res.json(result);
             });
         }else{
             const question = new Question(body);

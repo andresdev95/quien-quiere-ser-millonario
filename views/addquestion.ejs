@@ -67,11 +67,7 @@
                 </div>
             </form>
 
-
-
-
             <hr>
-
 
             <h3>Preguntas</h3>
             <table class="table table-bordered">
@@ -99,49 +95,6 @@
         <link rel="stylesheet" href="https://unpkg.com/vue-multiselect@2.1.0/dist/vue-multiselect.min.css">
 
 
-        <script type="text/javascript">
-
-            const preguntaDefault = { level: [1], answer: 1};
-
-            Vue.component('vue-multiselect', window.VueMultiselect.default)
-
-            new Vue({
-                el: '#app',
-                data: {
-                    pregunta: structuredClone(preguntaDefault),
-                    levels: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],
-                    bloquearBoton: false,
-                    mensaje: '',
-                    preguntas: [],
-                },
-                methods: {
-                    save(){
-                        this.mensaje = '';
-                        this.bloquearBoton = true;
-                        axios.post('question', this.pregunta).then(response => {
-                            //this.pregunta = response.data
-                            this.mensaje = 'Pregunta modificada/guardada con exito "'+response.data._id+'"';
-                            this.pregunta = structuredClone(preguntaDefault);
-                        }).catch(error => {
-                            console.log(error);
-                        }).then(()=>{ this.bloquearBoton = false; });
-                    },
-                    getPreguntas(){
-                        axios.get('questions').then(response => {
-                            this.preguntas = response.data;
-                        }).catch(error => {
-                            console.log(error);
-                        }).then(()=>{});
-                    },
-                    editarPregunta(pregunta){
-                        this.pregunta = pregunta;
-                    }
-                },
-                created: function(){
-                    this.getPreguntas();
-                }
-            });
-
-        </script>
+        <script type="text/javascript" src="../js/addquestion.js"></script>
     </body>
 </html>
