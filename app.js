@@ -4,7 +4,7 @@ const path = require('path');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3000;
 const DB_CONNECTION = process.env.DB_CONNECTION || 'mongodb://localhost:27017/millonario';
 
 global.structuredClone = (val) => JSON.parse(JSON.stringify(val))
