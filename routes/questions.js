@@ -109,7 +109,7 @@ router.get('/question/:level', async (req, res) => {
             .skip(random);
 
 
-        //shuffleProperties(question);
+        shuffleProperties(question);
 
         res.status(200).json(question);
     } catch (err) {
