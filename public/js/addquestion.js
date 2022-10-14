@@ -29,7 +29,11 @@ new Vue({
             }).then(()=>{});
         },
         editarPregunta(pregunta){
+            document.getElementById('pregunta').focus();
             this.pregunta = pregunta;
+        },
+        cancelarPregunta(pregunta){
+            this.pregunta = structuredClone(preguntaDefault);
         },
         eliminarPregunta(pregunta){
             if(!confirm('¿Seguro deseas eliminar?')) return;

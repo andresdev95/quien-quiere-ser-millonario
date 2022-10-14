@@ -9,6 +9,7 @@ const app = new Vue({
         pregunta: {},
         nivel_maximo: 20,
         opcionSeleccionada: 0,
+        dialogoSalir: 0,
         niveles: [
             {id: 1, nombre: 'Nivel 1', seguro: 0, completado: 0},
             {id: 2, nombre: 'Nivel 2', seguro: 0, completado: 0},
@@ -45,44 +46,44 @@ const app = new Vue({
                 nombre: 'Usuario',
                 _id: '1',
             }
-            this.contarTiempo();
+            this.iniciarTiempoTotal();
             this.siguientePregunta();
         },
         nivelesPanel(){
             return structuredClone(this.niveles).reverse();
         },
-        contarTiempo(){
+        iniciarTiempoTotal(){
             setTimeout(() => {
                 if(this.juegoEnProgreso == 1){
                     this.usuario.tiempo++;
-                    this.contarTiempo();
+                    this.iniciarTiempoTotal();
                 }
             }, 1000);
         },
+        detenerTiempoTotal(){
+            this.juegoEnProgreso = 0;
+        },
         getUltimoNivel(){
             return this.usuario.nivel_actual;
-            /*const nivel = this.niveles.filter((a)=> a.completado)[0];
-            if(nivel) return nivel.id;
-            return 0;*/
         },
         getUltimoNivelSeguro(){
             const nivel = this.nivelesPanel().filter((a)=> a.completado && a.seguro)[0];
             if(nivel) return nivel.id;
             return 0;
         },
-        limpiarRespuestas(){
+        prepararSiguienteNivel(){
             this.opcionSeleccionada = 0;
             document.querySelectorAll('.answer').forEach(label => {
                 label.classList.remove('ok');
                 label.classList.remove('fail');
             });
             this.pregunta = {};
-            this.usuario.nivel_actual = this.getUltimoNivel() + 1;
             unlockActions();
-            this.mensaje = '';
+            this.mostrarMensaje('');
+            this.cambiarNivelActual(this.getUltimoNivel() + 1);
         },
         siguientePregunta(){
-            this.limpiarRespuestas();
+            this.prepararSiguienteNivel();
             axios.get('api/question/'+this.usuario.nivel_actual).then((response)=>{
                 this.pregunta = response.data;
                 setTimer(45);
@@ -91,32 +92,45 @@ const app = new Vue({
                 console.error(error);
             });
         },
+        respuestaEsCorrecta(){
+            return this.opcionSeleccionada == this.pregunta.answer;
+        },
         comprobarRespuesta(){
-            const selectedAnswerLabel = document.getElementById(`option${this.opcionSeleccionada}`);
             pauseTimer();
             lockActions();
+            this.mostrarInformacionRespuestas();
 
-            if(this.opcionSeleccionada == this.pregunta.answer){
-                selectedAnswerLabel.classList.add("ok");
-                this.marcarNivelComoCompleto();
-                if(this.usuario.nivel_actual === this.nivel_maximo ){
-                    this.terminarJuego();
-                }else{
-                    this.mensaje = 'Excelente, Siguiente nivel';
-                    setTimeout(()=>{ this.siguientePregunta() }, TIEMPO_ESPERA_PREGUNTA);
-                }
+            if(this.respuestaEsCorrecta()){
+                this.marcarNivelComoCompleto();    
+                this.comprobarNivelMaximo();
+                if(this.usuario.nivel_actual >= this.nivel_maximo ) this.terminarJuego();
+                else setTimeout(()=>{ this.siguientePregunta() }, TIEMPO_ESPERA_PREGUNTA);
             }else{
-                if(this.opcionSeleccionada){
-                    selectedAnswerLabel.classList.add("fail");
-                }
-                const correctAnswerLabel = document.getElementById(`option${this.pregunta.answer}` );
-                correctAnswerLabel.classList.add("ok");
-                this.mensaje = 'Oh no, retrocedes al ultimo seguro';
                 this.irAUltimoSeguro();
             }
         },
+        mostrarInformacionRespuestas(){
+            const selectedAnswerLabel = document.getElementById(`option${this.opcionSeleccionada}`);
+            if(this.respuestaEsCorrecta()){
+                selectedAnswerLabel.classList.add("ok");
+                this.mostrarMensaje('Excelente, Siguiente nivel');
+            }else{
+                if(this.opcionSeleccionada){ selectedAnswerLabel.classList.add("fail"); }
+                const correctAnswerLabel = document.getElementById(`option${this.pregunta.answer}` );
+                correctAnswerLabel.classList.add("ok");
+                this.mostrarMensaje('Oh no, retrocedes al ultimo seguro');
+            }
+        },
+        cambiarNivelActual(nivel){
+            this.usuario.nivel_actual = nivel;
+        },
+        comprobarNivelMaximo(nivel){
+            if(this.usuario.nivel_max < this.usuario.nivel_actual){
+                this.usuario.nivel_max = this.usuario.nivel_actual;
+            }
+        },
         irAUltimoSeguro(){
-            this.usuario.nivel_actual = this.getUltimoNivelSeguro();
+            this.cambiarNivelActual(this.getUltimoNivelSeguro());
             this.marcarNivelComoCompleto();
             setTimeout(()=>{ this.siguientePregunta() }, TIEMPO_ESPERA_PREGUNTA);
         },
@@ -126,9 +140,20 @@ const app = new Vue({
             })
         },
         terminarJuego(){
+            this.ocultarDialogoSalir();
             lockActions();
-            this.mensaje = 'Terminastes el juego<br>Tiempo: ' + this.usuario.tiempo + ' s';
-            this.juegoEnProgreso = 0;
+            pauseTimer();
+            this.detenerTiempoTotal();
+            this.mostrarMensaje(`Terminastes el juego - Tiempo: ${this.usuario.tiempo} Seg.`);
+        },
+        mostrarMensaje(mensaje){
+            this.mensaje = mensaje;
+        },
+        mostrarDialogoSalir(){
+            this.dialogoSalir = 1;
+        },
+        ocultarDialogoSalir(){
+            this.dialogoSalir = 0;
         }
     },
     created: function(){

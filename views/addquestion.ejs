@@ -16,13 +16,13 @@
             <form @submit.prevent="save()" class="form">
                 <div class="row">
                     <div class="col-sm-12">
-                        <h3>Añadir un pregunta</h3>
+                        <h3> <span v-if="pregunta._id">Guardar</span> <span v-else>Crear</span> pregunta</h3>
                         <div class="alert alert-warning" v-if="mensaje" v-html="mensaje"></div>
                     </div>
                     <div class="col-sm-6">
                         <div class="form-group">
                             <label for="question">Pregunta: </label>
-                            <textarea class="form-control" v-model="pregunta.question" required></textarea>
+                            <textarea class="form-control" v-model="pregunta.question" required id="pregunta"></textarea>
                         </div>
                         
                         <label for="level">Nivel: </label>
@@ -61,7 +61,8 @@
                     <div class="col-sm-12">
                         <br>
                         <div class="form-group">
-                            <button type="submit" class="btn btn-primary">Añadir pregunta</button>
+                            <button type="submit" class="btn btn-primary">Guardar pregunta</button>
+                            <button type="button" class="btn btn-danger btn-sm" v-if="pregunta._id" v-on:click="cancelarPregunta()">Cancelar</button>
                         </div>
                     </div>
                 </div>
@@ -74,6 +75,7 @@
                 <thead>
                     <tr>
                         <th>Pregunta</th>
+                        <th>Respuesta</th>
                         <th>Nivel</th>
                         <th>Acción</th>
                     </tr>
@@ -81,7 +83,8 @@
                 <tbody>
                     <tr v-for="pregunta in preguntas">
                         <td v-html="pregunta.question"></td>
-                        <td v-html="pregunta.level"></td>
+                        <td v-html="pregunta['option'+pregunta.answer]"></td>
+                        <td> <small class="text-muted" v-html="pregunta.level"></small></td>
                         <td>
                             <button type="button" v-on:click="editarPregunta(pregunta)" class="btn btn-warning btn-sm">Editar</button>
                             <button type="button" v-on:click="eliminarPregunta(pregunta)" class="btn btn-danger btn-sm">Eliminar</button>

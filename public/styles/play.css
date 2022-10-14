@@ -40,6 +40,12 @@ aside .head{
     color: #fff;
 }
 
+table { 
+    border-spacing: 0;
+    border-collapse: collapse;
+    width: 100%;
+}
+
 .message {
     background-color: rgb(232, 255, 232);
     border: 2px solid green;
@@ -279,7 +285,9 @@ aside .head{
     background: #390f4e;
     border-radius: 0px 20px 0px 20px;
 }
-
+.dialog.show{
+    display: block;
+}
 .dialog-message {
     font-family: 'Poppins';
     font-size: 18px;
@@ -420,6 +428,11 @@ aside .head{
     width: auto;
     color: #f0d245;
     padding: 1px 30px;
+}
+
+.price-table-row.active td{
+    background: #ffffff;
+    color: #0f0f0f;
 }
 
 .checkpoint {
