@@ -1,0 +1,100 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    background-color: rgb(14, 15, 39);
+}
+
+.form {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 20px 30px;
+    background-color: rgb(57, 15, 79);
+    width: 550px;
+    -webkit-box-shadow: 0px 0px 15px 5px rgba(246, 190, 63, 0.75);
+    -moz-box-shadow: 0px 0px 15px 5px rgba(246, 190, 63, 0.75);
+    box-shadow: 0px 0px 15px 5px rgba(246, 190, 63, 0.75);
+}
+
+#header {
+    font-size: 18px;
+    font-weight: bold;
+    padding: 10px 0px;
+    color: rgb(246, 190, 63);
+}
+
+#form-messages {
+    background-color: rgb(255, 232, 232);
+    border: 1px solid red;
+    color: red;
+    display: none;
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    padding: 10px 25px;
+    max-width: 100%;
+}
+
+label {
+    display: block;
+    font-size: 16px;
+    margin: 10px 0px 5px 0px;
+    color: rgb(246, 190, 63);
+}
+
+input[type='text'],
+select {
+    width: 100%;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    padding: 5px 10px;
+}
+
+#status {
+    background-color: rgb(232, 255, 232);
+    border: 1px solid green;
+    color: green;
+    display: none;
+    font-size: 12px;
+    font-weight: bold;
+    margin-top: 20px;
+    padding: 10px 25px;
+    max-width: 100%;
+}
+
+.form li {
+    list-style: none;
+}
+
+button {
+    display: block;
+    padding: 10px 20px;
+    background-color: transparent;
+    color: rgb(246, 190, 63);
+    box-shadow: none;
+    border-style: none;
+    width: 100%;
+    margin-top: 20px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 16px;
+    border: 2px solid rgb(246, 190, 63);
+}
+
+@media screen and (max-width: 768px) {
+    .form {
+        width: 350px;
+        padding: 10px 15px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .form {
+        width: 300px;
+    }
+}
