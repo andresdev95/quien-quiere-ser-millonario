@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const Question = require('../models/Question');
 
-
 function shuffleProperties(pregunta){
     const keys = ['option1','option2','option3','option4'];
     const keysShuffle = structuredClone(keys).sort((a, b) => 0.5 - Math.random());
@@ -21,40 +20,16 @@ router.get('/question', (req, res) => {
     res.render('addquestion');
 });
 
-
 router.get('/questions', async (request, res)=>{
-    const questions = await Question.find();
     try{
+        const questions = await Question.find();
         res.json(questions);
     }catch(error){
         res.status(400).json({ error: err });
     }
 });
 
-
-/*
-router.get('/questions', async (req, res) => {
-    try {
-        const questions = await Question.find();
-        Question.res.json(questions);
-    } catch (err) {
-        res.json({ message: err });
-    }
-});
-*/
-
-/*router.get('/questions', async (req, res) => {
-    try {
-        const questions = await Question.find();
-        Question.res.json(questions);
-    } catch (err) {
-        res.json({ message: err });
-    }
-});*/
-
 router.get('/question/:level', async (req, res) => {
-    //await Question.updateMany({},{ $set: { level: [1] } });
-
     try {
         const level = parseInt(req.params.level);
         const filters = { level: level};
@@ -114,25 +89,6 @@ router.post('/question-remove/:id', async (req, res)=>{
     }
 });
 
-// Get A Specific Question
-router.get('/check/:questionId', async (req, res) => {
-    try {
-        //const question = await Question.findById(req.params.questionId);
-        const question = getQuestionById(req.params.questionId);
-        res.status(200).json({ answer: question.answer });
-    } catch (err) {
-        res.status(400).json({ error: err });
-    }
-});
-
-router.get('/checkanswer/:questionId', async (req, res) => {
-    try {
-        const question = await Question.findById(req.params.questionId);
-        res.status(200).json({ answer: question.answer });
-    } catch (err) {
-        res.status(400).json({ error: err });
-    }
-});
 /*
 router.get('/lifelines/audiencepoll/:questionId', async (req, res) => {
     try {
