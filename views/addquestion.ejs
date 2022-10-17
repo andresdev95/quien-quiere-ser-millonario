@@ -9,6 +9,12 @@
         <!-- Google Fonts -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.2/css/bootstrap.min.css"/>
         <link href="https://fonts.googleapis.com/css?family=Montserrat|Poppins|Raleway&display=swap"rel="stylesheet"/>
+        <style type="text/css">
+            .question-img{
+                width: 100%;
+                max-width: 300px;
+            }
+        </style>
     </head>
     <body>
 
@@ -26,7 +32,7 @@
                         </div>
                         
                         <label for="level">Nivel: </label>
-                        <vue-multiselect  multiple v-model="pregunta.level" :options="levels"></vue-multiselect>
+                        <vue-multiselect  multiple v-model="pregunta.level" :options="levels" :close-on-select="false" :allow-empty="false"></vue-multiselect>
                         <!--
                         <select class="form-control" multiple v-model="pregunta.level">
                             <option :value="level" v-html="level" v-for="level in levels"></option>

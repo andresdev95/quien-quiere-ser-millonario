@@ -144,7 +144,7 @@ const app = new Vue({
             lockActions();
             pauseTimer();
             this.detenerTiempoTotal();
-            this.mostrarMensaje(`Terminastes el juego - Tiempo: ${this.usuario.tiempo} Seg.`);
+            this.mostrarMensaje(`<h2>Felicitaciones</h2> <br> Terminastes el juego <br> Tiempo: ${this.usuario.tiempo} Seg.`);
         },
         mostrarMensaje(mensaje){
             this.mensaje = mensaje;

@@ -110,9 +110,7 @@
                 </div>
 
                 <!-- End Game Dialog -->
-                <div id="end-game-dialog" v-if="mensaje">
-                   {{ mensaje }}
-                </div>
+                <div id="end-game-dialog" v-if="mensaje" v-html="mensaje"></div>
             </main>
             <aside>
                 <div class="head">

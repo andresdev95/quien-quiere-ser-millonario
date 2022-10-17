@@ -12,7 +12,7 @@ El ganador es aquel que realice menos tiempo al finalizar los 20 niveles.
 
 1. Desarrollado usando node.js/express
 2. Las preguntas son almacenadas en una Base de datos MONGO
-3. El frontend corresponde a Vue.js (version 2)
+3. El frontend corresponde a Vue.js (version 2.6)
 
 ## Librerias utilizadas
 

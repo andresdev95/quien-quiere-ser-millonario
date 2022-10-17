@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const Question = require('../models/Question');
+const fs = require('fs');
+const path = require('path');
+const csv = require('fast-csv');
 
 function shuffleProperties(pregunta){
     const keys = ['option1','option2','option3','option4'];
@@ -14,6 +17,31 @@ function shuffleProperties(pregunta){
         pregunta[index] = clone[indexShuffle];
         if(indexShuffle == ('option'+clone.answer)) pregunta.answer = parseInt(key)+1;
     }
+}
+
+function getUrlDriveLink(drive_link){
+    if(!drive_link) return null;
+    const idDrive = drive_link.split('/')[5];
+    return `http://drive.google.com/uc?export=view&id=${idDrive}`;
+}
+
+function getImageByLink(enlace){
+    if(!enlace) return '';
+    return `<br><img class="question-img" src="${enlace}">`;
+}
+
+function getDataCsv(urlCSV, callback){
+    let stream = fs.createReadStream(urlCSV);
+    let collectionCsv = [];
+
+    let csvFileStream = csv.parse().on('data', function(data){
+        collectionCsv.push(data)
+    }).on('end', function(){
+        collectionCsv.shift();
+        //fs.unlinkSync(csvUrl);
+        callback(collectionCsv);
+    });
+    stream.pipe(csvFileStream);
 }
 
 router.get('/question', (req, res) => {
@@ -39,7 +67,6 @@ router.get('/question/:level', async (req, res) => {
         let question = await Question.findOne(filters)
             .limit(1)
             .skip(random);
-
 
         shuffleProperties(question);
 
@@ -87,6 +114,52 @@ router.post('/question-remove/:id', async (req, res)=>{
     } catch (err) {
         res.status(400).json({ error: err });
     }
+});
+
+router.get('/csv-question', async (req, res) =>{
+    const urlCSV = path.join(__dirname, '..', 'public', 'uploads', 'preguntas.csv');
+    getDataCsv(urlCSV, (data)=>{
+        const collectionCsv = data.map((question) => {
+            return {
+                question: question[0] + getImageByLink(getUrlDriveLink(question[7])),
+                option1: question[1],
+                option2: question[2],
+                option3: question[3],
+                option4: question[4],
+                answer: 1,
+                level: question[5].split(',').map((x) => parseInt(x)),
+                time: (question[6] * 60)
+            }
+        });
+
+        Question.insertMany(collectionCsv).then(function(){
+            res.json(collectionCsv);
+        }).catch(function(error){
+            res.status(400).json({ error: error });
+        });
+    });
+
+    /*let csvFileStream = csv
+        .parse()
+        .on('data', function (data) {
+            collectionCsv.push(data)
+        })
+        .on('end', function () {
+            collectionCsv.shift()
+            db.connect((error) => {
+                if (error) {
+                    console.error(error)
+                } else {
+                    let query = 'INSERT INTO users (id, name, email) VALUES ?'
+                    db.query(query, [collectionCsv], (error, res) => {
+                        console.log(error || res)
+                    })
+                }
+            })
+            fs.unlinkSync(csvUrl)
+        })
+    stream.pipe(csvFileStream)*/
+    
 });
 
 /*
