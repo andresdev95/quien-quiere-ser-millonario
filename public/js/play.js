@@ -3,6 +3,10 @@ const buttons = {
     quit: document.getElementById('quit-button')
 };
 const TIEMPO_ESPERA_PREGUNTA = 2000;
+/*const socket = io();
+socket.on('saludo', function (data) {
+    console.log(data);
+});*/
 const app = new Vue({
     el: '#app',
     data: {
@@ -38,16 +42,20 @@ const app = new Vue({
     },
     methods: {
         init(){
-            this.usuario = {
-                nivel_max: 0,
-                nivel_actual: 0,
-                nivel_seguro: 0,
-                tiempo: 0,
-                nombre: 'Usuario',
-                _id: '1',
-            }
+            if(!localStorage._id) window.location.href = '/';
+            this.userFromStorage();
             this.iniciarTiempoTotal();
             this.siguientePregunta();
+        },
+        userFromStorage(){
+            this.usuario = {
+                nivel_max: 0, //parseInt(localStorage.nivel_max),
+                nivel_actual: 0, //parseInt(localStorage.nivel_actual),
+                nivel_seguro: 0, //parseInt(localStorage.nivel_seguro),
+                tiempo: 0, //parseInt(localStorage.tiempo),
+                nombre: localStorage.user,
+                _id: localStorage._id,
+            };
         },
         nivelesPanel(){
             return structuredClone(this.niveles).reverse();
@@ -99,6 +107,7 @@ const app = new Vue({
             pauseTimer();
             lockActions();
             this.mostrarInformacionRespuestas();
+            this.saveToStorage(this.usuario);
 
             if(this.respuestaEsCorrecta()){
                 this.marcarNivelComoCompleto();    
@@ -154,10 +163,23 @@ const app = new Vue({
         },
         ocultarDialogoSalir(){
             this.dialogoSalir = 0;
+        },
+        saveToStorage(informacion){
+            localStorage.nivel_max = informacion.nivel_max ;
+            localStorage.nivel_actual = informacion.nivel_actual ;
+            localStorage.nivel_seguro = informacion.nivel_seguro ;
+            localStorage.tiempo = informacion.tiempo;
+            localStorage.user = informacion.nombre;
+            localStorage._id = informacion._id;
         }
     },
     created: function(){
         this.init();
+    },
+    watch: {
+        usuario(newUsuario) {
+            this.saveToStorage(newUsuario);
+        }
     }
 });
 

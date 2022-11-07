@@ -4,28 +4,69 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-        <link href="https://fonts.googleapis.com/css?family=Poppins&display=swap" rel="stylesheet"/>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
         <title>Inicio</title>
         <link rel="stylesheet" href="/styles/index.css" />
     </head>
     <body>
-        <audio src="/audio/kbc_intro_audio.mp3" type="audio/mp3" id="kbc-intro-music" autoplay ></audio>
-
-        
-        <div id="logo">
-            <!-- <h3>Quien quiere ser millonario</h3> -->
+        <div class="container" id="app">
+            <div class="cover">
+                <div class="front">
+                    <img src="img/fondo-millonario.jpeg" alt="">
+                    <div class="text">
+                        <span class="text-1">Colibri Kids Trivia</span>
+                        <span class="text-2">CKT Game</span>
+                    </div>
+                </div>
+            </div>
+            <div class="forms">
+                <div class="form-content">
+                    <div class="login-form">
+                    <div class="title">Nuevo juego</div>
+                        <form @submit.prevent="enviar">
+                            <div class="input-boxes">
+                                <div class="input-box">
+                                    <i class="fas fa-user"></i>
+                                    <input type="text" placeholder="Ingresa tu nombre" v-model="usuario" required>
+                                </div>
+                                <div class="button input-box">
+                                    <input type="submit" value="Comenzar">
+                                </div>
+                                <!-- <div class="text sign-up-text">Don't have an account? <label>Sigup now</label></div> -->
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
-
-
-        <div id="button"> <button>Jugar</button> </div>
-
-        <div id="logo-img-shadow"></div>
-        <img id="logo-img" src="/img/logo.png" alt="" />
-
-        
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/2.1.3/TimelineLite.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/2.1.3/TweenLite.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/2.1.3/TweenMax.min.js"></script>
-        <script src="/js/index.js"></script>
     </body>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                usuario: '',
+            },
+            methods:{
+                enviar(){
+                    axios.post('play', {user:this.usuario}).then((response)=>{
+                        localStorage.nivel_max =  0;
+                        localStorage.nivel_actual = 0;
+                        localStorage.nivel_seguro =  0;
+                        localStorage.tiempo =  0;
+                        localStorage.user =  response.data.user;
+                        localStorage._id =  response.data._id;
+
+                        window.location.href = 'play';
+                    }).catch((error)=>{
+                        console.error(error);
+                    });
+                }
+            },
+            created: function(){
+                localStorage.clear();
+            }
+        });
+    </script>
 </html>
