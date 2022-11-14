@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Question = require('../models/Question');
+const Game = require('../models/Game');
 const fs = require('fs');
 const path = require('path');
 const csv = require('fast-csv');
@@ -161,6 +162,16 @@ router.get('/csv-question', async (req, res) =>{
     stream.pipe(csvFileStream)*/
     
 });
+
+
+router.get('/games', async (request, res)=>{
+    try{
+        const games = await Game.find();
+        res.json(games);
+    }catch(error){
+        res.status(400).json({ error: err });
+    }
+})
 
 /*
 router.get('/lifelines/audiencepoll/:questionId', async (req, res) => {

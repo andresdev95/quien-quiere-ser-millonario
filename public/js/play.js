@@ -3,7 +3,7 @@ const buttons = {
     quit: document.getElementById('quit-button')
 };
 const TIEMPO_ESPERA_SIGUIENTE_PREGUNTA = 2000; // IN MiliSeconds
-const TIEMPO_RESPONDER_PREGUNTA = 45; // IN Seconds.
+const TIEMPO_RESPONDER_PREGUNTA = 60; // IN Seconds.
 /*const socket = io();
 socket.on('saludo', function (data) {
     console.log(data);
@@ -96,7 +96,7 @@ const app = new Vue({
             this.prepararSiguienteNivel();
             axios.get('api/question/'+this.usuario.nivel_actual).then((response)=>{
                 this.pregunta = response.data;
-                setTimer(this.pregunta.tiempo || TIEMPO_RESPONDER_PREGUNTA);
+                setTimer(this.pregunta.time || TIEMPO_RESPONDER_PREGUNTA);
                 startResumeTimer()
             }).catch((error)=>{
                 console.error(error);

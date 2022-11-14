@@ -12,6 +12,10 @@ router.get('/play', (req, res) => {
     res.render('play');
 });
 
+router.get('/games', (req, res) => {
+    res.render('games');
+});
+
 router.post('/play', async (req, res) => {
     try {
         const body = {

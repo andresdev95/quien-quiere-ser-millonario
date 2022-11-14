@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+        <title>Formulario juegos</title>
+        <!-- <link rel="stylesheet" type="text/css" href="/styles/addquestion.css" /> -->
+        <!-- Google Fonts -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.2/css/bootstrap.min.css"/>
+        <link href="https://fonts.googleapis.com/css?family=Montserrat|Poppins|Raleway&display=swap"rel="stylesheet"/>
+    </head>
+    <body>
+
+        <div class="container" id="app">
+            <h3>Juegos</h3>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Tiempo</th>
+                        <th>Nivel</th>
+                        <th>Nivel max</th>
+                        <th>Finalizado</th>
+                        <th>Ultima actualización</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="juego in juegos">
+                        <td v-html="juego.usuario"></td>
+                        <td> {{ juego.tiempo }} s.</td>
+                        <td> <small class="text-muted" v-html="juego.nivel_actual"></small></td>
+                        <td> <small class="text-muted" v-html="juego.nivel_maximo"></small></td>
+                        <td> {{ juego.finalizado ? 'SI' : 'NO' }}</td>
+                        <td> {{ juego.updated_at | timeago }}</td>
+                        <td>
+                            <button type="button" v-on:click="eliminarJuego(juego)" class="btn btn-danger btn-sm">Eliminar</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment-with-locales.min.js" integrity="sha256-AdQN98MVZs44Eq2yTwtoKufhnU+uZ7v2kXnD5vqzZVo=" crossorigin="anonymous"></script>
+
+        <script>
+            moment.locale('es');
+
+            new Vue({
+                el: '#app',
+                data: {
+                    juegos: [],
+                },
+                methods: {
+                    getJuegos(){
+                        axios.get('api/games').then(response => {
+                            this.juegos = response.data;
+                        }).catch(error => {
+                            console.log(error);
+                        }).then(()=>{});
+                    },
+                    eliminarJuego(juego){
+                        /*if(!confirm('¿Seguro deseas eliminar?')) return;
+                        axios.post('question-remove/'+juego._id).then(response => {
+                            this.juegos = this.juegos.filter((a) => a._id != juego._id);
+                        }).catch(error => {
+                            console.log(error);
+                        }).then(()=>{ });*/
+                    },
+                },
+                created: function(){
+                    this.getJuegos();
+                },
+		    	filters: {
+		            timeago(value) {
+		                return moment(value).local().calendar();//.fromNow()
+		            }
+		        },
+            });
+
+        </script>
+    </body>
+</html>

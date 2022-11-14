@@ -1,4 +1,4 @@
-const preguntaDefault = { level: [1], answer: 1};
+const preguntaDefault = { level: [1], answer: 1, time: 60};
 Vue.component('vue-multiselect', window.VueMultiselect.default)
 new Vue({
     el: '#app',
