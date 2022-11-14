@@ -2,8 +2,11 @@ const mongoose = require('mongoose');
 
 const GameSchema = mongoose.Schema(
     {
-        user: { type: String, required: true, trim: true },
-        level: { type: Number, required: true },
+        usuario: { type: String, required: true, trim: true },
+        nivel_actual: { type: Number, required: true },
+        nivel_maximo: { type: Number, required: true },
+        tiempo: { type: Number, required: true },
+        finalizado: { type: Number, required: true },
     },
     {
         timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' 

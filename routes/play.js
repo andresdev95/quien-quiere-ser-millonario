@@ -1,18 +1,25 @@
 const express = require('express');
 const router = express.Router();
 const Game = require('../models/Game');
-const fs = require('fs');
-const path = require('path');
+//const fs = require('fs');
+//const path = require('path');
 
 router.get('/', (req, res) => {
     res.render('index');
 });
 
+router.get('/play', (req, res) => {
+    res.render('play');
+});
+
 router.post('/play', async (req, res) => {
     try {
         const body = {
-            user: req.body.user,
-            level: 0
+            usuario: req.body.usuario,
+            nivel_actual: 0,
+            nivel_maximo: 0,
+            tiempo: 0,
+            finalizado: 0,
         };
         const game = new Game(body);
         const savedGame = await game.save();
@@ -22,8 +29,24 @@ router.post('/play', async (req, res) => {
     }
 });
 
-router.get('/play', (req, res) => {
-    res.render('play');
+
+router.post('/play/save', async (req, res) => {
+    try {
+        const id = req.body._id;
+        const body = {
+            nivel_actual: req.body.nivel_actual,
+            nivel_maximo: req.body.nivel_maximo,
+            tiempo: req.body.tiempo,
+            finalizado: req.body.finalizado,
+        };
+
+        Game.findByIdAndUpdate(id, body, { returnOriginal: false }, function(err, result) {
+            if(err) res.status(400).json({ error: err });
+            else res.json(result);
+        });
+    } catch (err) {
+        res.status(400).json({ error: err });
+    }
 });
 
 /*

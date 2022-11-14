@@ -50,13 +50,14 @@
             },
             methods:{
                 enviar(){
-                    axios.post('play', {user:this.usuario}).then((response)=>{
-                        localStorage.nivel_max =  0;
-                        localStorage.nivel_actual = 0;
-                        localStorage.nivel_seguro =  0;
-                        localStorage.tiempo =  0;
-                        localStorage.user =  response.data.user;
-                        localStorage._id =  response.data._id;
+                    axios.post('play', {usuario: this.usuario}).then((response)=>{
+                        localStorage.finalizado = response.data.finalizado;
+                        localStorage.nivel_maximo = response.data.nivel_maximo;
+                        localStorage.nivel_seguro = response.data.nivel_maximo;
+                        localStorage.nivel_actual = response.data.nivel_actual;
+                        localStorage.tiempo = response.data.tiempo;
+                        localStorage.user = response.data.user;
+                        localStorage._id = response.data._id;
 
                         window.location.href = 'play';
                     }).catch((error)=>{

@@ -2,7 +2,8 @@ const buttons = {
     lock: document.getElementById('lock-button'),
     quit: document.getElementById('quit-button')
 };
-const TIEMPO_ESPERA_PREGUNTA = 2000;
+const TIEMPO_ESPERA_SIGUIENTE_PREGUNTA = 2000; // IN MiliSeconds
+const TIEMPO_RESPONDER_PREGUNTA = 45; // IN Seconds.
 /*const socket = io();
 socket.on('saludo', function (data) {
     console.log(data);
@@ -15,26 +16,26 @@ const app = new Vue({
         opcionSeleccionada: 0,
         dialogoSalir: 0,
         niveles: [
-            {id: 1, nombre: 'Nivel 1', seguro: 0, completado: 0},
-            {id: 2, nombre: 'Nivel 2', seguro: 0, completado: 0},
-            {id: 3, nombre: 'Nivel 3', seguro: 0, completado: 0},
-            {id: 4, nombre: 'Nivel 4', seguro: 0, completado: 0},
-            {id: 5, nombre: 'Nivel 5', seguro: 1, completado: 0},
-            {id: 6, nombre: 'Nivel 6', seguro: 0, completado: 0},
-            {id: 7, nombre: 'Nivel 7', seguro: 0, completado: 0},
-            {id: 8, nombre: 'Nivel 8', seguro: 0, completado: 0},
-            {id: 9, nombre: 'Nivel 9', seguro: 0, completado: 0},
-            {id: 10, nombre: 'Nivel 10', seguro: 1, completado: 0},
-            {id: 11, nombre: 'Nivel 11', seguro: 0, completado: 0},
-            {id: 12, nombre: 'Nivel 12', seguro: 0, completado: 0},
-            {id: 13, nombre: 'Nivel 13', seguro: 0, completado: 0},
-            {id: 14, nombre: 'Nivel 14', seguro: 0, completado: 0},
-            {id: 15, nombre: 'Nivel 15', seguro: 1, completado: 0},
-            {id: 16, nombre: 'Nivel 16', seguro: 0, completado: 0},
-            {id: 17, nombre: 'Nivel 17', seguro: 0, completado: 0},
-            {id: 18, nombre: 'Nivel 18', seguro: 0, completado: 0},
-            {id: 19, nombre: 'Nivel 19', seguro: 0, completado: 0},
-            {id: 20, nombre: 'Nivel 20', seguro: 1, completado: 0},
+            {id: 1, nombre: 'Pregunta 1', seguro: 0, completado: 0},
+            {id: 2, nombre: 'Pregunta 2', seguro: 0, completado: 0},
+            {id: 3, nombre: 'Pregunta 3', seguro: 0, completado: 0},
+            {id: 4, nombre: 'Pregunta 4', seguro: 0, completado: 0},
+            {id: 5, nombre: 'Pregunta 5', seguro: 1, completado: 0},
+            {id: 6, nombre: 'Pregunta 6', seguro: 0, completado: 0},
+            {id: 7, nombre: 'Pregunta 7', seguro: 0, completado: 0},
+            {id: 8, nombre: 'Pregunta 8', seguro: 0, completado: 0},
+            {id: 9, nombre: 'Pregunta 9', seguro: 0, completado: 0},
+            {id: 10, nombre: 'Pregunta 10', seguro: 1, completado: 0},
+            {id: 11, nombre: 'Pregunta 11', seguro: 0, completado: 0},
+            {id: 12, nombre: 'Pregunta 12', seguro: 0, completado: 0},
+            {id: 13, nombre: 'Pregunta 13', seguro: 0, completado: 0},
+            {id: 14, nombre: 'Pregunta 14', seguro: 0, completado: 0},
+            {id: 15, nombre: 'Pregunta 15', seguro: 1, completado: 0},
+            {id: 16, nombre: 'Pregunta 16', seguro: 0, completado: 0},
+            {id: 17, nombre: 'Pregunta 17', seguro: 0, completado: 0},
+            {id: 18, nombre: 'Pregunta 18', seguro: 0, completado: 0},
+            {id: 19, nombre: 'Pregunta 19', seguro: 0, completado: 0},
+            {id: 20, nombre: 'Pregunta 20', seguro: 1, completado: 0},
         ],
         usuario: null,
         juegoEnProgreso: 1,
@@ -42,18 +43,19 @@ const app = new Vue({
     },
     methods: {
         init(){
-            if(!localStorage._id) window.location.href = '/';
+            if((!localStorage._id) || (localStorage.finalizado == 1)) window.location.href = '/';
             this.userFromStorage();
             this.iniciarTiempoTotal();
             this.siguientePregunta();
         },
         userFromStorage(){
             this.usuario = {
-                nivel_max: 0, //parseInt(localStorage.nivel_max),
+                finalizado: 0, //parseInt(localStorage.finalizado)
+                nivel_maximo: 0, //parseInt(localStorage.nivel_maximo),
                 nivel_actual: 0, //parseInt(localStorage.nivel_actual),
                 nivel_seguro: 0, //parseInt(localStorage.nivel_seguro),
                 tiempo: 0, //parseInt(localStorage.tiempo),
-                nombre: localStorage.user,
+                usuario: localStorage.usuario,
                 _id: localStorage._id,
             };
         },
@@ -94,7 +96,7 @@ const app = new Vue({
             this.prepararSiguienteNivel();
             axios.get('api/question/'+this.usuario.nivel_actual).then((response)=>{
                 this.pregunta = response.data;
-                setTimer(45);
+                setTimer(this.pregunta.tiempo || TIEMPO_RESPONDER_PREGUNTA);
                 startResumeTimer()
             }).catch((error)=>{
                 console.error(error);
@@ -113,10 +115,11 @@ const app = new Vue({
                 this.marcarNivelComoCompleto();    
                 this.comprobarNivelMaximo();
                 if(this.usuario.nivel_actual >= this.nivel_maximo ) this.terminarJuego();
-                else setTimeout(()=>{ this.siguientePregunta() }, TIEMPO_ESPERA_PREGUNTA);
+                else setTimeout(()=>{ this.siguientePregunta() }, TIEMPO_ESPERA_SIGUIENTE_PREGUNTA);
             }else{
                 this.irAUltimoSeguro();
             }
+            this.saveData();
         },
         mostrarInformacionRespuestas(){
             const selectedAnswerLabel = document.getElementById(`option${this.opcionSeleccionada}`);
@@ -134,14 +137,14 @@ const app = new Vue({
             this.usuario.nivel_actual = nivel;
         },
         comprobarNivelMaximo(nivel){
-            if(this.usuario.nivel_max < this.usuario.nivel_actual){
-                this.usuario.nivel_max = this.usuario.nivel_actual;
+            if(this.usuario.nivel_maximo < this.usuario.nivel_actual){
+                this.usuario.nivel_maximo = this.usuario.nivel_actual;
             }
         },
         irAUltimoSeguro(){
             this.cambiarNivelActual(this.getUltimoNivelSeguro());
             this.marcarNivelComoCompleto();
-            setTimeout(()=>{ this.siguientePregunta() }, TIEMPO_ESPERA_PREGUNTA);
+            setTimeout(()=>{ this.siguientePregunta() }, TIEMPO_ESPERA_SIGUIENTE_PREGUNTA);
         },
         marcarNivelComoCompleto(){
             this.niveles.map((nivel) => {
@@ -154,6 +157,8 @@ const app = new Vue({
             pauseTimer();
             this.detenerTiempoTotal();
             this.mostrarMensaje(`<h2>Felicitaciones</h2> <br> Terminastes el juego <br> Tiempo: ${this.usuario.tiempo} Seg.`);
+            this.usuario.finalizado = 1;
+            this.saveData();
         },
         mostrarMensaje(mensaje){
             this.mensaje = mensaje;
@@ -165,12 +170,27 @@ const app = new Vue({
             this.dialogoSalir = 0;
         },
         saveToStorage(informacion){
-            localStorage.nivel_max = informacion.nivel_max ;
+            localStorage.finalizado = informacion.finalizado ;
+            localStorage.nivel_maximo = informacion.nivel_maximo ;
             localStorage.nivel_actual = informacion.nivel_actual ;
             localStorage.nivel_seguro = informacion.nivel_seguro ;
             localStorage.tiempo = informacion.tiempo;
-            localStorage.user = informacion.nombre;
+            localStorage.usuario = informacion.usuario;
             localStorage._id = informacion._id;
+        },
+        saveData(){
+            let usuario = {
+                _id: this.usuario._id,
+                nivel_actual: this.usuario.nivel_actual,
+                nivel_maximo: this.usuario.nivel_maximo,
+                finalizado: this.usuario.finalizado,
+                tiempo: this.usuario.tiempo
+            };
+            axios.post('play/save', usuario).then((response)=>{
+                console.log(response.data)
+            }).catch((error)=>{
+                console.error(error);
+            });
         }
     },
     created: function(){
