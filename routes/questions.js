@@ -87,6 +87,7 @@ router.post('/question', async (req, res)=>{
             option3: req.body.option3,
             option4: req.body.option4,
             answer: req.body.answer,
+            time: req.body.time,
             level: req.body.level
         };
 
