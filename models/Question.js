@@ -28,6 +28,11 @@ const QuestionSchema = mongoose.Schema({
     level: {
         type: Array,
         required: true
+    },
+    time: {
+        type: Number,
+        required: true,
+        default: 60
     }
 });
 

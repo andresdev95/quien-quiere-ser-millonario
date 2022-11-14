@@ -1,4 +1,5 @@
-const preguntaDefault = { level: [1], answer: 1, time: 60};
+const defaultTime = 60;
+const preguntaDefault = { level: [1], answer: 1, time: defaultTime};
 Vue.component('vue-multiselect', window.VueMultiselect.default)
 new Vue({
     el: '#app',
@@ -23,7 +24,9 @@ new Vue({
         },
         getPreguntas(){
             axios.get('questions').then(response => {
+                response.data.map((a)=> { a.time = a.time || defaultTime; } );
                 this.preguntas = response.data;
+                //this.preguntas = this.preguntas.map((a)=> { a.time = a.time || defaultTime;  return a;} );
             }).catch(error => {
                 console.log(error);
             }).then(()=>{});
@@ -47,7 +50,7 @@ new Vue({
             let i = this.preguntas.findIndex(x => x._id == pregunta._id)
             if( i === -1 ){ this.preguntas.push(pregunta); }
             else { this.preguntas.splice(i, 1, pregunta) }
-                console.log(pregunta)
+            //console.log(pregunta)
         },
     },
     created: function(){
