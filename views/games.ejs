@@ -9,6 +9,14 @@
         <!-- Google Fonts -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.2/css/bootstrap.min.css"/>
         <link href="https://fonts.googleapis.com/css?family=Montserrat|Poppins|Raleway&display=swap"rel="stylesheet"/>
+        <style>
+            .fruit-list-move {
+            transition: transform 1s;
+            }
+            .fruit-table-move {
+            transition: transform 1s;
+            }
+        </style>
     </head>
     <body>
 
@@ -19,15 +27,15 @@
                     <tr>
                         <th>Usuario</th>
                         <th>Tiempo</th>
-                        <th>Nivel</th>
-                        <th>Nivel max</th>
+                        <th>Pregunta</th>
+                        <th>Pregunta max</th>
                         <th>Finalizado</th>
                         <th>Ultima actualización</th>
                         <!-- <th>Acción</th> -->
                     </tr>
                 </thead>
-                <tbody>
-                    <tr v-for="juego in juegos">
+                <tbody name="fruit-table" is="transition-group">
+                    <tr v-for="juego in juegosOrdenados" :key="juego._id">
                         <td v-html="juego.usuario"></td>
                         <td> {{ juego.tiempo }} s.</td>
                         <td> <small class="text-muted" v-html="juego.nivel_actual"></small></td>
@@ -95,7 +103,7 @@
                 },
                 computed: {
                     juegosOrdenados: function(){
-                        return this.juegos.sort(fieldSorter(['-time', 'level']));
+                        return this.juegos.sort(fieldSorter(['-nivel_actual', 'tiempo']));
                     },
                 },
 		    	filters: {
