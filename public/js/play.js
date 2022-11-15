@@ -1,18 +1,15 @@
-
-
-
-const buttons = {
-    lock: document.getElementById('lock-button'),
-    quit: document.getElementById('quit-button')
-};
-const TIEMPO_ESPERA_SIGUIENTE_PREGUNTA = 2000; // IN MiliSeconds
-const TIEMPO_RESPONDER_PREGUNTA = 60; // IN Seconds.
-const socket = io();
-//socket.emit('savedGame', {nombre: 'queso'});
 if((!localStorage._id) || (localStorage.finalizado == 1))
     window.location.href = '/';
 else{
-    const app = new Vue({
+    const buttons = {
+        lock: document.getElementById('lock-button'),
+        quit: document.getElementById('quit-button')
+    };
+    const TIEMPO_ESPERA_SIGUIENTE_PREGUNTA = 2000; // IN MiliSeconds
+    const TIEMPO_RESPONDER_PREGUNTA = 60; // IN Seconds.
+    const socket = io();
+
+    let app = new Vue({
         el: '#app',
         data: {
             pregunta: {},
@@ -50,7 +47,6 @@ else{
                 this.userFromStorage();
                 this.iniciarTiempoTotal();
                 this.siguientePregunta();
-                //socket.emit('savedGame', this.usuario);
             },
             userFromStorage(){
                 this.usuario = {
@@ -98,7 +94,11 @@ else{
             },
             siguientePregunta(){
                 this.prepararSiguienteNivel();
-                axios.get('api/question/'+this.usuario.nivel_actual).then((response)=>{
+                axios.get('api/question/'+this.usuario.nivel_actual, {
+                    params: {
+                      _id: this.usuario._id,
+                    }
+                }).then((response)=>{
                     this.pregunta = response.data;
                     setTimer(this.pregunta.time || TIEMPO_RESPONDER_PREGUNTA);
                     startResumeTimer()
@@ -193,7 +193,6 @@ else{
                 };
                 axios.post('play/save', usuario).then((response)=>{
                     //console.log(response.data)
-                    //socket.emit('savedGame',this.usuario);
                 }).catch((error)=>{
                     console.error(error);
                 });
@@ -208,88 +207,89 @@ else{
             }
         }
     });
-}
 
-document.body.addEventListener('click', function (evt) {
-    if (evt.target.classList.contains('question-img')) {
-        var elemDiv = document.createElement('div');
-        elemDiv.id = 'preview-img';
-        elemDiv.innerHTML = `<img class="preview-img-img" src="${evt.target.src}">`;
-        document.body.appendChild(elemDiv);
-    }else if(evt.target.classList.contains('preview-img-img')){
-        document.getElementById('preview-img').remove();
+    document.body.addEventListener('click', function (evt) {
+        let el = evt.target;
+        if (el.classList.contains('question-img')) {
+            var elemDiv = document.createElement('div');
+            elemDiv.id = 'preview-img';
+            elemDiv.innerHTML = `<img class="preview-img-img" src="${el.src}">`;
+            document.body.appendChild(elemDiv);
+        }else if(el.classList.contains('preview-img-img') || el.id == 'preview-img' ){
+            document.getElementById('preview-img').remove();
+        }
+    }, false);
+
+    function lockActions() {
+        document.getElementById('lock-button').disabled = true;
+        document.getElementById('quit-button').disabled = true;
     }
-}, false);
 
-function lockActions() {
-    document.getElementById('lock-button').disabled = true;
-    document.getElementById('quit-button').disabled = true;
-}
-
-function unlockActions(buttons) {
-    document.getElementById('lock-button').disabled = false;
-    document.getElementById('quit-button').disabled = false;
-}
-
-
-// Time Container
-const timer = {
-    span: document.getElementById('progress-span'),
-    left: document.getElementById('progress-left'),
-    right: document.getElementById('progress-right'),
-    running: false,
-    timeLeft: 45,
-    timeTotal: 45
-};
-
-function setTimer(time) {
-    timer.running = false;
-    if (time) {
-        // Time is either 45 or 60 seconds
-        timer.span.innerHTML = time;
-        timer.timeLeft = time;
-        timer.timeTotal = time;
-        timer.left.style.width = '0%';
-        timer.right.style.width = '0%';
-    } else {
-        // Time is infinity
-        timer.span.innerHTML = 0;
-        timer.timeLeft = 0;
-        timer.timeTotal = 0;
-        timer.left.style.width = '100%';
-        timer.right.style.width = '100%';
+    function unlockActions(buttons) {
+        document.getElementById('lock-button').disabled = false;
+        document.getElementById('quit-button').disabled = false;
     }
-}
 
-function startResumeTimer() {
-    if (!timer.running) {
-        // Start or Resume Timer
-        timer.running = true;
-        decrementTimer(timer.timeLeft);
-    }
-}
 
-function pauseTimer() {
-    if (timer.running) {
-        // Pause Timer
+    // Time Container
+    const timer = {
+        span: document.getElementById('progress-span'),
+        left: document.getElementById('progress-left'),
+        right: document.getElementById('progress-right'),
+        running: false,
+        timeLeft: 45,
+        timeTotal: 45
+    };
+
+    function setTimer(time) {
         timer.running = false;
+        if (time) {
+            // Time is either 45 or 60 seconds
+            timer.span.innerHTML = time;
+            timer.timeLeft = time;
+            timer.timeTotal = time;
+            timer.left.style.width = '0%';
+            timer.right.style.width = '0%';
+        } else {
+            // Time is infinity
+            timer.span.innerHTML = 0;
+            timer.timeLeft = 0;
+            timer.timeTotal = 0;
+            timer.left.style.width = '100%';
+            timer.right.style.width = '100%';
+        }
     }
-}
 
-function decrementTimer() {
-    if (timer.running) {
-        setTimeout(() => {
-            if (timer.timeLeft >= 1) {
-                timer.timeLeft--;
-                let progress =
-                    100 - Math.floor((timer.timeLeft / timer.timeTotal) * 100);
-                timer.left.style.width = progress + '%';
-                timer.right.style.width = progress + '%';
-                timer.span.innerHTML = timer.timeLeft;
-                decrementTimer();
-            } else {
-                app.comprobarRespuesta();
-            }
-        }, 1000);
+    function startResumeTimer() {
+        if (!timer.running) {
+            // Start or Resume Timer
+            timer.running = true;
+            decrementTimer(timer.timeLeft);
+        }
+    }
+
+    function pauseTimer() {
+        if (timer.running) {
+            // Pause Timer
+            timer.running = false;
+        }
+    }
+
+    function decrementTimer() {
+        if (timer.running) {
+            setTimeout(() => {
+                if (timer.timeLeft >= 1) {
+                    timer.timeLeft--;
+                    let progress =
+                        100 - Math.floor((timer.timeLeft / timer.timeTotal) * 100);
+                    timer.left.style.width = progress + '%';
+                    timer.right.style.width = progress + '%';
+                    timer.span.innerHTML = timer.timeLeft;
+                    decrementTimer();
+                } else {
+                    app.comprobarRespuesta();
+                }
+            }, 1000);
+        }
     }
 }
