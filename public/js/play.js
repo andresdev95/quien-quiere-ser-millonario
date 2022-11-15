@@ -4,7 +4,7 @@ const buttons = {
 };
 const TIEMPO_ESPERA_SIGUIENTE_PREGUNTA = 2000; // IN MiliSeconds
 const TIEMPO_RESPONDER_PREGUNTA = 60; // IN Seconds.
-//const socket = io();
+const socket = io();
 //socket.emit('savedGame', {nombre: 'queso'});
 const app = new Vue({
     el: '#app',
