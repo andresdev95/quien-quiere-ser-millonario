@@ -29,7 +29,6 @@ const io = new Server(httpServer, {});
 io.on("connection", (socket) => {
     socket.join('room1');
     app.set("socket", socket);
-    console.log(connect);
 });
 
 app.set('socketio', io);

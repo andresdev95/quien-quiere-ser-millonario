@@ -35,7 +35,7 @@ function getDataCsv(urlCSV, callback){
     let stream = fs.createReadStream(urlCSV);
     let collectionCsv = [];
 
-    let csvFileStream = csv.parse().on('data', function(data){
+    let csvFileStream = csv.parse({ delimiter: ';' }).on('data', function(data){
         collectionCsv.push(data)
     }).on('end', function(){
         collectionCsv.shift();
