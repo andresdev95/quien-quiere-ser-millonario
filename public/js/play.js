@@ -157,6 +157,7 @@ const app = new Vue({
             this.detenerTiempoTotal();
             this.mostrarMensaje(`<h2>Felicitaciones</h2> <br> Terminastes el juego <br> Tiempo: ${this.usuario.tiempo} Seg.`);
             this.usuario.finalizado = 1;
+            localStorage.finalizado = 1;
             this.saveData();
         },
         mostrarMensaje(mensaje){
