@@ -1,10 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const Question = require('../models/Question');
+const UserQuestions = require('../models/UserQuestion');
 const Game = require('../models/Game');
 const fs = require('fs');
 const path = require('path');
 const csv = require('fast-csv');
+const UserQuestion = require('../models/UserQuestion');
 
 function shuffleProperties(pregunta){
     const keys = ['option1','option2','option3','option4'];
@@ -61,7 +63,10 @@ router.get('/questions', async (request, res)=>{
 router.get('/question/:level', async (req, res) => {
     try {
         const level = parseInt(req.params.level);
-        const filters = { level: level};
+        const usuario = req.query._id;
+
+        const questions = await UserQuestion.find({user: usuario});
+        const filters = { level: level, "_id":{"$nin": questions.map((a)=>{ return a.question; }) }};
 
         const totalRecords = await Question.countDocuments(filters);
         const random = Math.floor(Math.random() * totalRecords);
@@ -70,6 +75,9 @@ router.get('/question/:level', async (req, res) => {
             .skip(random);
 
         shuffleProperties(question);
+
+        const uq = new UserQuestion({ user: usuario, question: question._id, level: level});
+        const uqsave = await uq.save();
 
         res.status(200).json(question);
     } catch (err) {

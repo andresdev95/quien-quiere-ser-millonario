@@ -1,39 +1,19 @@
 const mongoose = require('mongoose');
 
-const QuestionSchema = mongoose.Schema({
+const UserQuestionSchema = mongoose.Schema({
     question: {
-        type: String,
+        type: mongoose.Types.ObjectId,
         required: true
     },
-    option1: {
-        type: String,
-        required: true
-    },
-    option2: {
-        type: String,
-        required: true
-    },
-    option3: {
-        type: String,
-        required: true
-    },
-    option4: {
-        type: String,
-        required: true
-    },
-    answer: {
-        type: Number,
+    user: {
+        type: mongoose.Types.ObjectId,
         required: true
     },
     level: {
-        type: Array,
-        required: true
-    },
-    time: {
         type: Number,
         required: true,
-        default: 60
+        default: 0
     }
 });
 
-module.exports = mongoose.model('Questions', QuestionSchema);
+module.exports = mongoose.model('UserQuestions', UserQuestionSchema);
