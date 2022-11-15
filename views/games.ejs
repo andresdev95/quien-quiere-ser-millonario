@@ -95,7 +95,6 @@
                         let i = this.juegos.findIndex(x => x._id == juego._id)
                         if( i === -1 ){ this.juegos.push(juego); }
                         else { this.juegos.splice(i, 1, juego) }
-                        console.log(juego);
                     },
                 },
                 created: function(){

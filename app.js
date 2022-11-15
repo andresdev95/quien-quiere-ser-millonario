@@ -27,6 +27,9 @@ io.on("connection", (socket) => {
     console.log('user has connected');
     socket.join('room1');
     app.set("socket", socket);
+    socket.on('disconnect', function () {
+        socket.leave('room1');
+    });
 });
 
 //app.set('socketio', io);

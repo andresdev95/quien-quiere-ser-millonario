@@ -57,7 +57,7 @@ router.post('/play/save', async (req, res) => {
 
 function emitUser(req, game){
     const socket = req.app.get('socket');
-    socket.emit('savedGame', game);
+    socket.to('room1').emit('savedGame', game);
 }
 
 
