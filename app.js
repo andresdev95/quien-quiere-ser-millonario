@@ -13,8 +13,6 @@ const DB_CONNECTION = process.env.DB_CONNECTION || 'mongodb://localhost:27017/mi
 
 global.structuredClone = (val) => JSON.parse(JSON.stringify(val))
 
-// require('dotenv/config');
-
 // Middlewares
 app.set('view engine', 'ejs');
 app.use(cors());
@@ -36,13 +34,10 @@ io.on("connection", (socket) => {
 // Import Routes
 const playRoute = require('./routes/play');
 const questionRoute = require('./routes/questions');
-const { connect } = require('http2');
 
 // Routes Middlewares
 app.use('/', playRoute);
 app.use('/api', questionRoute);
-
-//app.once('')
 
 // Connect to db
 mongoose.connect(DB_CONNECTION, { useNewUrlParser: true })
