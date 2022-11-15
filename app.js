@@ -25,13 +25,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 const httpServer = createServer(app);
 const io = new Server(httpServer, {});
 
-
 io.on("connection", (socket) => {
     socket.join('room1');
     app.set("socket", socket);
+    console.log('user has connected')
 });
 
-app.set('socketio', io);
+//app.set('socketio', io);
 
 // Import Routes
 const playRoute = require('./routes/play');

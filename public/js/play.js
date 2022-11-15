@@ -203,6 +203,17 @@ const app = new Vue({
     }
 });
 
+document.body.addEventListener('click', function (evt) {
+    if (evt.target.classList.contains('question-img')) {
+        var elemDiv = document.createElement('div');
+        elemDiv.id = 'preview-img';
+        elemDiv.innerHTML = `<img class="preview-img-img" src="${evt.target.src}">`;
+        document.body.appendChild(elemDiv);
+    }else if(evt.target.classList.contains('preview-img-img')){
+        document.getElementById('preview-img').remove();
+    }
+}, false);
+
 function lockActions() {
     document.getElementById('lock-button').disabled = true;
     document.getElementById('quit-button').disabled = true;
