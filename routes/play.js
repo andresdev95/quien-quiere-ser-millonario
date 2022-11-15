@@ -27,6 +27,7 @@ router.post('/play', async (req, res) => {
         };
         const game = new Game(body);
         const savedGame = await game.save();
+        emitUser(req, savedGame);
         res.status(201).json(savedGame);
     } catch (err) {
         res.status(400).json({ error: err });
@@ -44,14 +45,22 @@ router.post('/play/save', async (req, res) => {
             finalizado: req.body.finalizado,
         };
 
-        Game.findByIdAndUpdate(id, body, { returnOriginal: false }, function(err, result) {
+        Game.findByIdAndUpdate(id, body, { returnOriginal: false }, function(err, savedGame) {
             if(err) res.status(400).json({ error: err });
-            else res.json(result);
+            emitUser(req, savedGame);
+            res.json(savedGame);
         });
     } catch (err) {
         res.status(400).json({ error: err });
     }
 });
+
+
+function emitUser(req, game){
+    const socket = req.app.get('socket');
+    socket.emit('savedGame', game);
+}
+
 
 /*
 router.get('/questions', async (request, res)=>{

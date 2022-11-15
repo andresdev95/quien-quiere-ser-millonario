@@ -4,10 +4,8 @@ const buttons = {
 };
 const TIEMPO_ESPERA_SIGUIENTE_PREGUNTA = 2000; // IN MiliSeconds
 const TIEMPO_RESPONDER_PREGUNTA = 60; // IN Seconds.
-/*const socket = io();
-socket.on('saludo', function (data) {
-    console.log(data);
-});*/
+//const socket = io();
+//socket.emit('savedGame', {nombre: 'queso'});
 const app = new Vue({
     el: '#app',
     data: {
@@ -47,6 +45,7 @@ const app = new Vue({
             this.userFromStorage();
             this.iniciarTiempoTotal();
             this.siguientePregunta();
+            //socket.emit('savedGame', this.usuario);
         },
         userFromStorage(){
             this.usuario = {
@@ -187,7 +186,8 @@ const app = new Vue({
                 tiempo: this.usuario.tiempo
             };
             axios.post('play/save', usuario).then((response)=>{
-                console.log(response.data)
+                //console.log(response.data)
+                //socket.emit('savedGame',this.usuario);
             }).catch((error)=>{
                 console.error(error);
             });

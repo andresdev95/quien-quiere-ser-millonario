@@ -23,7 +23,7 @@
                         <th>Nivel max</th>
                         <th>Finalizado</th>
                         <th>Ultima actualización</th>
-                        <th>Acción</th>
+                        <!-- <th>Acción</th> -->
                     </tr>
                 </thead>
                 <tbody>
@@ -34,9 +34,11 @@
                         <td> <small class="text-muted" v-html="juego.nivel_maximo"></small></td>
                         <td> {{ juego.finalizado ? 'SI' : 'NO' }}</td>
                         <td> {{ juego.updated_at | timeago }}</td>
+                        <!--
                         <td>
                             <button type="button" v-on:click="eliminarJuego(juego)" class="btn btn-danger btn-sm">Eliminar</button>
                         </td>
+                        -->
                     </tr>
                 </tbody>
             </table>
@@ -46,11 +48,21 @@
         <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment-with-locales.min.js" integrity="sha256-AdQN98MVZs44Eq2yTwtoKufhnU+uZ7v2kXnD5vqzZVo=" crossorigin="anonymous"></script>
-
+        <script src="https://cdn.socket.io/4.5.3/socket.io.min.js" integrity="sha384-WPFUvHkB1aHA5TDSZi6xtDgkF0wXJcIIxXhC6h8OT8EH3fC5PWro5pWJ1THjcfEi" crossorigin="anonymous"></script>
         <script>
             moment.locale('es');
+            const socket = io();
+            const fieldSorter = (fields) => (a, b) => fields.map(o => {
+                let dir = 1;
+                if (o[0] === '-') { dir = -1; o=o.substring(1); }
+                return a[o] > b[o] ? dir : a[o] < b[o] ? -(dir) : 0;
+            }).reduce((p, n) => p ? p : n, 0);
 
-            new Vue({
+            socket.on("savedGame", (data) => {
+                app.addGame(data);
+            });
+
+            var app = new Vue({
                 el: '#app',
                 data: {
                     juegos: [],
@@ -71,9 +83,20 @@
                             console.log(error);
                         }).then(()=>{ });*/
                     },
+                    addGame(juego){
+                        let i = this.juegos.findIndex(x => x._id == juego._id)
+                        if( i === -1 ){ this.juegos.push(juego); }
+                        else { this.juegos.splice(i, 1, juego) }
+                        console.log(juego);
+                    },
                 },
                 created: function(){
                     this.getJuegos();
+                },
+                computed: {
+                    juegosOrdenados: function(){
+                        return this.juegos.sort(fieldSorter(['-time', 'level']));
+                    },
                 },
 		    	filters: {
 		            timeago(value) {
@@ -81,7 +104,6 @@
 		            }
 		        },
             });
-
         </script>
     </body>
 </html>

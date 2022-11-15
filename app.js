@@ -24,25 +24,26 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Socket io
 const httpServer = createServer(app);
 const io = new Server(httpServer, {});
-/*
+
+
 io.on("connection", (socket) => {
-    console.log('one user connect');
-
-    //socket.emit('saludo', {});
-
-    socket.conn.on("close", (reason) => {
-        console.log('A user disconnected desde aqui');
-    });
+    socket.join('room1');
+    app.set("socket", socket);
+    console.log(connect);
 });
-*/
+
+app.set('socketio', io);
 
 // Import Routes
 const playRoute = require('./routes/play');
 const questionRoute = require('./routes/questions');
+const { connect } = require('http2');
 
 // Routes Middlewares
 app.use('/', playRoute);
 app.use('/api', questionRoute);
+
+//app.once('')
 
 // Connect to db
 mongoose.connect(DB_CONNECTION, { useNewUrlParser: true })
